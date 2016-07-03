@@ -12,7 +12,7 @@ namespace SyncService
     [System.ServiceModel.ServiceBehavior()]
     public class SyncService : ISyncService
     {
-        private const string RemoteDirectoryPath = @"c:\sync\Remote";
+        private const string RemoteDirectoryPath = @"C:\sync\ServerStore";
 
         public SyncKnowledge GetCurrentSyncKnowledge()
         {
