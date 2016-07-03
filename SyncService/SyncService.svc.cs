@@ -56,7 +56,11 @@ namespace SyncService
 
         public void DeleteFile(SyncId itemID, string itemUri)
         {
-            File.Delete(Path.Combine(RemoteDirectoryPath, itemUri));
+
+            if (itemUri!="")
+            {
+                File.Delete(Path.Combine(RemoteDirectoryPath, itemUri));
+            }
         }
 
         public void StoreKnowledgeForScope(SyncKnowledge knowledge, ForgottenKnowledge forgotten)

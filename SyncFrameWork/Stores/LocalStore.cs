@@ -178,7 +178,10 @@ namespace SyncFrameWork.Controllers
                 case SaveChangeAction.DeleteAndStoreTombstone:
                     {
                         System.Diagnostics.Debug.WriteLine("   Delete File: " + item.Uri);
-                        File.Delete(Path.Combine(folderPath, item.Uri));
+                        if (item.Uri!="")
+                        {
+                            File.Delete(Path.Combine(folderPath, item.Uri));
+                        }
                         break;
                     }
                 default:

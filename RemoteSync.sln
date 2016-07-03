@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.21005.1
+# Visual Studio 14
+VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Demo", "Demo", "{33CD1F27-1FC7-448D-9D3B-24FA555138DB}"
 EndProject
@@ -26,28 +26,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestClient", "TestClient\TestClient.csproj", "{F82042A9-C06B-46A3-AF88-B72C2DB2F43A}"
 EndProject
 Global
-	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 5
-		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
-		SccTeamFoundationServer = https://labrinth.visualstudio.com/defaultcollection
-		SccLocalPath0 = .
-		SccProjectUniqueName1 = Common\\Common.csproj
-		SccProjectTopLevelParentUniqueName1 = RemoteSync.sln
-		SccProjectName1 = Common
-		SccLocalPath1 = Common
-		SccProjectUniqueName2 = SyncFrameWork\\SyncFrameWork.csproj
-		SccProjectTopLevelParentUniqueName2 = RemoteSync.sln
-		SccProjectName2 = SyncFrameWork
-		SccLocalPath2 = SyncFrameWork
-		SccProjectUniqueName3 = SyncService\\SyncService.csproj
-		SccProjectTopLevelParentUniqueName3 = RemoteSync.sln
-		SccProjectName3 = SyncService
-		SccLocalPath3 = SyncService
-		SccProjectUniqueName4 = TestClient\\TestClient.csproj
-		SccProjectTopLevelParentUniqueName4 = RemoteSync.sln
-		SccProjectName4 = TestClient
-		SccLocalPath4 = TestClient
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|.NET = Debug|.NET
 		Debug|Any CPU = Debug|Any CPU
@@ -140,9 +118,9 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{F82042A9-C06B-46A3-AF88-B72C2DB2F43A} = {33CD1F27-1FC7-448D-9D3B-24FA555138DB}
-		{08D8BC49-F57B-457A-ADF4-7D2960461531} = {3B3BCD64-42F5-414C-8400-3B09E150C396}
 		{29F30F52-9DED-4DDA-94A5-38606DA8431B} = {4FD3FDF0-0DCE-4231-AF4A-84AC6CFE1E86}
 		{2F4F0D25-B27F-400A-97DA-3C93931F7A14} = {4FD3FDF0-0DCE-4231-AF4A-84AC6CFE1E86}
+		{08D8BC49-F57B-457A-ADF4-7D2960461531} = {3B3BCD64-42F5-414C-8400-3B09E150C396}
+		{F82042A9-C06B-46A3-AF88-B72C2DB2F43A} = {33CD1F27-1FC7-448D-9D3B-24FA555138DB}
 	EndGlobalSection
 EndGlobal
