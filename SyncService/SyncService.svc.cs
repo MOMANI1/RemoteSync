@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.IO;
 using System.Security.AccessControl;
 using System.Security.Principal;
@@ -14,7 +15,7 @@ namespace SyncService
     [System.ServiceModel.ServiceBehavior()]
     public class SyncService : ISyncService
     {
-        private const string RemoteDirectoryPath = @"D:\sync\ServerStore";
+        private string RemoteDirectoryPath = ConfigurationManager.AppSettings["RemoteDirectoryPath"];
 
         public SyncKnowledge GetCurrentSyncKnowledge()
         {
