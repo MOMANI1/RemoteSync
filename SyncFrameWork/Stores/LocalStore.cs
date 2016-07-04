@@ -1,5 +1,7 @@
 ﻿using System;
 using System.IO;
+using System.Security.AccessControl;
+using System.Security.Principal;
 using Common;
 using Microsoft.Synchronization;
 
@@ -214,12 +216,31 @@ namespace SyncFrameWork.Controllers
                 outputStream.SetLength(outputStream.Position);
             }
             item.LastWriteTimeUtc = fileInfo.LastWriteTimeUtc;
-
+            GrantAccess(fileInfo.FullName);
             data.DataStream.Close();
         }
         public void SaveChangeWithChangeUnits(ItemChange change, SaveChangeWithChangeUnitsContext context)
         {
             throw new NotImplementedException();
+        }
+
+        public static bool GrantAccess(string fullPath)
+        {
+            try
+            {
+                WindowsIdentity id = WindowsIdentity.GetCurrent();
+
+                DirectoryInfo dInfo = new DirectoryInfo(fullPath);
+                DirectorySecurity dSecurity = dInfo.GetAccessControl();
+                dSecurity.AddAccessRule(new FileSystemAccessRule(id.User.AccountDomainSid, FileSystemRights.FullControl, InheritanceFlags.ObjectInherit | InheritanceFlags.ContainerInherit, PropagationFlags.NoPropagateInherit, AccessControlType.Allow));
+                dInfo.SetAccessControl(dSecurity);
+                return true;
+            }
+            catch (Exception exception)
+            {
+                System.Diagnostics.Debug.WriteLine(exception);
+            }
+            return false;
         }
     }
 }

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Security.AccessControl;
+using System.Security.Principal;
 using Common;
 using Common.DTO;
 using Microsoft.Synchronization;
@@ -52,6 +54,7 @@ namespace SyncService
                     writeStream.Write(buffer, 0, bytesRead);
                 } while (true);
             }
+            GrantAccess(fi.FullName);
         }
 
         public void DeleteFile(SyncId itemID, string itemUri)
@@ -125,6 +128,25 @@ namespace SyncService
 
 
         #endregion
+
+        public static bool GrantAccess(string fullPath)
+        {
+            try
+            {
+                WindowsIdentity id = WindowsIdentity.GetCurrent();
+
+                DirectoryInfo dInfo = new DirectoryInfo(fullPath);
+                DirectorySecurity dSecurity = dInfo.GetAccessControl();
+                dSecurity.AddAccessRule(new FileSystemAccessRule(id.User.AccountDomainSid, FileSystemRights.FullControl, InheritanceFlags.ObjectInherit | InheritanceFlags.ContainerInherit, PropagationFlags.NoPropagateInherit, AccessControlType.Allow));
+                dInfo.SetAccessControl(dSecurity);
+                return true;
+            }
+            catch (Exception exception)
+            {
+                System.Diagnostics.Debug.WriteLine(exception);
+            }
+            return false;
+        }
     }
 
 }
