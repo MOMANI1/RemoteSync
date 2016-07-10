@@ -9,6 +9,7 @@
         Title="Sync Tool" Height="354.232" Width="694.306" Closing="Window_Closing"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
     Background="{DynamicResource MaterialDesignPaper}"
+   
     FontFamily="pack://application:,,,/MaterialDesignThemes.Wpf;component/Resources/Roboto/#Roboto">
 
     <Grid>
@@ -59,12 +60,13 @@
                 <TextBox x:Name="textBoxDestination" HorizontalAlignment="Left" Height="23" Margin="100,51,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="237"/>
                 <Label x:Name="label" Content="Source                " HorizontalAlignment="Left" Margin="10,7,0,0" VerticalAlignment="Top"/>
                 <Label x:Name="label_Copy1" Content="Destination" HorizontalAlignment="Left" Margin="10,50,0,0" VerticalAlignment="Top"/>
-                <Label x:Name="label_Copy2" Content="Destination" HorizontalAlignment="Left" Margin="10,94,0,0" VerticalAlignment="Top"/>
+                <Label x:Name="label_Copy2" Content="Interval" HorizontalAlignment="Left" Margin="10,94,0,0" VerticalAlignment="Top"/>
                 <TextBox x:Name="textBoxSeconds" HorizontalAlignment="Left" Height="23" Margin="256,89,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="38"/>
                 <Slider x:Name="slider" HorizontalAlignment="Left" Margin="100,94,0,0" VerticalAlignment="Top" Width="142" Maximum="1800" Minimum="1" ValueChanged="slider_ValueChanged" />
 
                 <Label x:Name="label2" Content="Seconds" HorizontalAlignment="Left" Margin="299,94,0,0" VerticalAlignment="Top"/>
-                <Button x:Name="buttonSave" Content="Save" HorizontalAlignment="Left" Margin="100,120,0,0" VerticalAlignment="Top" Width="64" Height="24" Click="buttonSave_Click"/>
+                <Button x:Name="buttonSave" Content="Save" HorizontalAlignment="Left" Margin="256,122,0,0" VerticalAlignment="Top" Width="64" Height="24" Click="buttonSave_Click"/>
+                <CheckBox x:Name="checkBox" Content="Use Temp Directory" HorizontalAlignment="Left" Margin="100,122,0,0" VerticalAlignment="Top"/>
             </Grid>
         </GroupBox>
         <GroupBox
@@ -82,6 +84,22 @@
                 <Button x:Name="button" Content="Sync now" HorizontalAlignment="Left" Margin="29,10,0,0" VerticalAlignment="Top" Width="101" Click="button_Click"/>
                 <Label x:Name="NewState" Content="Unknown" HorizontalAlignment="Left" Margin="90,51,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.398,0.625"/>
                 <Label x:Name="label1" Content="Status" HorizontalAlignment="Left" Margin="10,51,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.547,0.491"/>
+            </Grid>
+        </GroupBox>
+        <GroupBox
+        	Header="Others"
+        	HorizontalAlignment="Left"
+        	Margin="213,199,0,0"
+        	VerticalAlignment="Top"
+        	Height="107"
+        	Width="181" Grid.ColumnSpan="2">
+            <Grid
+        		HorizontalAlignment="Left"
+        		Height="84"
+        		VerticalAlignment="Top"
+        		Width="173" Margin="-2,0,-3,0">
+                <Button x:Name="buttonExit" Content="Exit App" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="153" Click="buttonExit_Click" />
+                <Button x:Name="button1ClearSync" Content="Clear Sync Data" HorizontalAlignment="Left" Margin="10,47,0,0" VerticalAlignment="Top" Width="153" Click="button1ClearSync_Click" />
             </Grid>
         </GroupBox>
 

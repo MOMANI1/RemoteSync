@@ -56,10 +56,12 @@
       <HintPath>..\..\..\..\..\Program Files (x86)\Microsoft SDKs\Microsoft Sync Framework\2.1\Runtime\x86\Microsoft.Synchronization.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AppSettings.cs" />
     <Compile Include="DTO\ChangeBatchTransfer.cs" />
     <Compile Include="DTO\ItemMetadata.cs" />
     <Compile Include="LocalSyncDetails.cs" />

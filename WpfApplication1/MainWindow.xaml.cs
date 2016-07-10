@@ -12,6 +12,7 @@ using System.Windows.Forms;
 using System.Windows.Input;
 using Microsoft.Synchronization;
 using SyncFrameWork.Controllers;
+using SyncFrameWork.TestClient;
 using MouseEventArgs = System.Windows.Input.MouseEventArgs;
 using Timer = System.Timers.Timer;
 
@@ -25,13 +26,15 @@ namespace WpfApplication1
         private BackgroundWorker worker;
         private Timer timer;
 
+        private static TestClientServiceDemo serviceDemo;
+
         private LocalStore localStore;
         private RemoteStore remoteStore;
         private NotifyIcon m_notifyIcon;
 
         private ContextMenuStrip m_contextMenu;
         private bool _ForceClose;
-        private int i=0;
+        private int i = 0;
 
         public MainWindow()
         {
@@ -40,24 +43,25 @@ namespace WpfApplication1
             CreateNotifyIcon();
 
             worker = new BackgroundWorker();
+            worker.WorkerSupportsCancellation = true;
 
             worker.DoWork += (sender, args) => SyncProcces();
 
             timer = new Timer(Convert.ToInt32(ConfigurationManager.AppSettings["AutoSyncInterval"]) * 1000);
             timer.Elapsed += timer_Elapsed;
 
-            
+            serviceDemo = new TestClientServiceDemo(ConfigurationManager.AppSettings["ServiceAddress"]);
         }
 
-       
+
 
         private void timer_Elapsed(object sender, ElapsedEventArgs e)
         {
             if (!worker.IsBusy)
             {
                 worker.RunWorkerAsync();
-                this.Dispatcher.Invoke((Action)(() =>syncNum.Content = ++i));
-               
+                this.Dispatcher.Invoke((Action)(() => syncNum.Content = ++i));
+
             }
         }
 
@@ -83,13 +87,13 @@ namespace WpfApplication1
             //Initalize Notify Icon
             m_notifyIcon = new NotifyIcon
             {
-                Text = "Application Title",
-                Icon = new Icon("Icon.ico"),
+                Text = "Sync Tool",
+                Icon = new Icon(Path.Combine(Environment.CurrentDirectory, @"icon.ico")),
                 //Associate the contextmenustrip with notify icon
                 ContextMenuStrip = m_contextMenu,
                 Visible = true
             };
-           
+
             m_notifyIcon.MouseUp += (sender, args) => m_contextMenu.Show();
 
 
@@ -105,7 +109,7 @@ namespace WpfApplication1
             #region chagne Interval if needed
 
             timer.Enabled = false;
-            timer.Interval = Convert.ToInt32(ConfigurationManager.AppSettings["AutoSyncInterval"])*1000;
+            timer.Interval = Convert.ToInt32(ConfigurationManager.AppSettings["AutoSyncInterval"]) * 1000;
             timer.Enabled = true;
 
             #endregion
@@ -121,7 +125,7 @@ namespace WpfApplication1
 
         #region sync
 
-        private bool firstTimeSync=true;
+        private bool firstTimeSync = true;
         public void SyncProcces()
         {
             #region comments
@@ -152,7 +156,7 @@ namespace WpfApplication1
                         */
 
             #endregion
-            if(firstTimeSync)
+            if (firstTimeSync)
             {
                 localStore = new LocalStore(ConfigurationManager.AppSettings["LocalAddress"]);
                 remoteStore = new RemoteStore(ConfigurationManager.AppSettings["ServiceAddress"]);
@@ -165,7 +169,7 @@ namespace WpfApplication1
             remoteStore.Configuration.ConflictResolutionPolicy = ConflictResolutionPolicy.SourceWins;
 
             SyncOrchestrator syncAgent = new SyncOrchestrator();
-            syncAgent.StateChanged+=SyncAgentOnStateChanged;
+            syncAgent.StateChanged += SyncAgentOnStateChanged;
 
             syncAgent.LocalProvider = localStore;
             syncAgent.RemoteProvider = remoteStore;
@@ -203,7 +207,7 @@ namespace WpfApplication1
             {
                 NewState.Content =
                     $"{syncOrchestratorStateChangedEventArgs.NewState}";
-                
+
             });
 
         }
@@ -212,10 +216,10 @@ namespace WpfApplication1
         {
             Dispatcher.Invoke(() =>
             {
-//                lcw.Content = $"{syncStagedProgressEventArgs.CompletedWork}";
-//                lrp.Content = $"{syncStagedProgressEventArgs.ReportingProvider}";
-//                ls.Content = $"{syncStagedProgressEventArgs.Stage}";
-//                ltw.Content = $"{syncStagedProgressEventArgs.TotalWork}";
+                //                lcw.Content = $"{syncStagedProgressEventArgs.CompletedWork}";
+                //                lrp.Content = $"{syncStagedProgressEventArgs.ReportingProvider}";
+                //                ls.Content = $"{syncStagedProgressEventArgs.Stage}";
+                //                ltw.Content = $"{syncStagedProgressEventArgs.TotalWork}";
             });
 
         }
@@ -239,7 +243,7 @@ namespace WpfApplication1
         protected void Maximize()
         {
             Show();
-            this.WindowState =WindowState.Normal;
+            this.WindowState = WindowState.Normal;
         }
         protected void EndApplication()
         {
@@ -248,6 +252,8 @@ namespace WpfApplication1
             Thread.Sleep(1000);
             _ForceClose = true;
             WindowState = WindowState.Normal;
+            if (worker != null && worker.IsBusy)
+                worker.CancelAsync();
             this.Close();
             Environment.Exit(0);
         }
@@ -273,6 +279,37 @@ namespace WpfApplication1
             config.AppSettings.Settings["AutoSyncInterval"].Value = textBoxSeconds.Text;
             config.Save();
         }
+
+        private void buttonExit_Click(object sender, RoutedEventArgs e)
+        {
+            EndApplication();
+        }
+
+        //this button to be clicked in case dead lock
+        private void button1ClearSync_Click(object sender, RoutedEventArgs e)
+        {
+            DeleteSyncFiles();
+        }
+
+        private static void DeleteSyncFiles()
+        {
+            try
+            {
+                File.Delete(Path.Combine(ConfigurationManager.AppSettings["LocalAddress"], "file.sync"));
+            }
+            catch (Exception exception)
+            {
+                Console.WriteLine(exception);
+            }
+            try
+            {
+                serviceDemo.Deletefileonserver("file.sync");
+            }
+            catch (Exception exception)
+            {
+                Console.WriteLine(exception);
+            }
+        }
     }
-    
+
 }
