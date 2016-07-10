@@ -33,7 +33,8 @@ namespace SyncService
 
         public void UploadFile(RemoteFileInfo request)
         {
-            FileInfo fi = new FileInfo(Path.Combine(RemoteDirectoryPath, request.Metadata.Uri));
+            string workingPath = GetPathToWorkWith();
+            FileInfo fi = new FileInfo(Path.Combine(workingPath, request.Metadata.Uri));
 
             if (!fi.Directory.Exists)
             {
@@ -56,6 +57,8 @@ namespace SyncService
                 } while (true);
             }
             GrantAccess(fi.FullName);
+            if (workingPath != RemoteDirectoryPath )//useTemp Setting in web.config is true
+                fi.MoveTo(Path.Combine(RemoteDirectoryPath, fi.Name));
         }
 
         public void DeleteFile(SyncId itemID, string itemUri)
@@ -147,6 +150,16 @@ namespace SyncService
                 System.Diagnostics.Debug.WriteLine(exception);
             }
             return false;
+        }
+        private string GetPathToWorkWith()
+        {
+            var useTemp = AppSettings.Get<bool>("UseTemp");
+            string workingPath;
+            if (useTemp)
+                workingPath = AppSettings.Get<string>("TempDirectoryPath");
+            else
+                workingPath = RemoteDirectoryPath;
+            return workingPath;
         }
     }
 

@@ -198,13 +198,15 @@ namespace SyncFrameWork.Controllers
 
         private void UpdateOrCreateFile(DataTransfer data, ItemMetadata item)
         {
-            FileInfo fileInfo = new FileInfo(Path.Combine(folderPath, item.Uri));
+            string workingPath = GetPathToWorkWith();
+
+            FileInfo fileInfo = new FileInfo(Path.Combine(workingPath, item.Uri));
 
             if (!fileInfo.Directory.Exists)
                 fileInfo.Directory.Create();
 
 
-            using (FileStream outputStream = new FileStream(Path.Combine(folderPath, item.Uri), FileMode.OpenOrCreate))
+            using (FileStream outputStream = new FileStream(Path.Combine(workingPath, item.Uri), FileMode.OpenOrCreate))
             {
                 const int copyBlockSize = 4096;
                 byte[] buffer = new byte[copyBlockSize];
@@ -218,7 +220,21 @@ namespace SyncFrameWork.Controllers
             item.LastWriteTimeUtc = fileInfo.LastWriteTimeUtc;
             GrantAccess(fileInfo.FullName);
             data.DataStream.Close();
+            if (workingPath != folderPath /* useTemp*/)//useTemp Setting is true
+                fileInfo.MoveTo(Path.Combine(folderPath, fileInfo.Name));
         }
+
+        private string GetPathToWorkWith()
+        {
+            var useTemp = AppSettings.Get<bool>("UseTemp");
+            string workingPath;
+            if (useTemp)
+                workingPath = AppSettings.Get<string>("TempDirectoryPath");
+            else
+                workingPath = folderPath;
+            return workingPath;
+        }
+
         public void SaveChangeWithChangeUnits(ItemChange change, SaveChangeWithChangeUnitsContext context)
         {
             throw new NotImplementedException();

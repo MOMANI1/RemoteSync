@@ -10,6 +10,7 @@ using System.Timers;
 using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Input;
+using Common;
 using Microsoft.Synchronization;
 using SyncFrameWork.Controllers;
 using SyncFrameWork.TestClient;
@@ -67,9 +68,10 @@ namespace WpfApplication1
 
         private void LoadConfiguration()
         {
-            textBoxSoure.Text = ConfigurationManager.AppSettings["LocalAddress"];
-            textBoxDestination.Text = ConfigurationManager.AppSettings["ServiceAddress"];
-            textBoxSeconds.Text = ConfigurationManager.AppSettings["AutoSyncInterval"];
+            textBoxSoure.Text = AppSettings.Get<string>("LocalAddress");
+            textBoxDestination.Text = AppSettings.Get<string>("ServiceAddress");
+            textBoxSeconds.Text = AppSettings.Get<string>("AutoSyncInterval");
+            checkBoxUseTemp.IsChecked = AppSettings.Get<bool>("UseTemp");
         }
 
         private void CreateNotifyIcon()
@@ -277,6 +279,7 @@ namespace WpfApplication1
             config.AppSettings.Settings["LocalAddress"].Value = textBoxSoure.Text;
             config.AppSettings.Settings["ServiceAddress"].Value = textBoxDestination.Text;
             config.AppSettings.Settings["AutoSyncInterval"].Value = textBoxSeconds.Text;
+            config.AppSettings.Settings["UseTemp"].Value = checkBoxUseTemp.IsChecked.Value.ToString();
             config.Save();
         }
 
