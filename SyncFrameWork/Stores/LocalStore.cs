@@ -198,7 +198,7 @@ namespace SyncFrameWork.Controllers
 
         private void UpdateOrCreateFile(DataTransfer data, ItemMetadata item)
         {
-            string workingPath = GetPathToWorkWith();
+           string workingPath = GetPathToWorkWith();
 
             FileInfo fileInfo = new FileInfo(Path.Combine(workingPath, item.Uri));
 
@@ -221,7 +221,15 @@ namespace SyncFrameWork.Controllers
             GrantAccess(fileInfo.FullName);
             data.DataStream.Close();
             if (workingPath != folderPath /* useTemp*/)//useTemp Setting is true
-                fileInfo.MoveTo(Path.Combine(folderPath, fileInfo.Name));
+                try
+                {
+                    fileInfo.MoveTo(Path.Combine(folderPath, fileInfo.Name));
+                }
+                catch (Exception e)
+                {
+                    fileInfo.Delete();
+                    Console.WriteLine(e);
+                }
         }
 
         private string GetPathToWorkWith()

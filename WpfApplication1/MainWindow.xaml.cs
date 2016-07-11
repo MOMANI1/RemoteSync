@@ -158,7 +158,7 @@ namespace WpfApplication1
                         */
 
             #endregion
-            if (firstTimeSync)
+            if (firstTimeSync)//localStore==null && remoteStore ==null
             {
                 localStore = new LocalStore(ConfigurationManager.AppSettings["LocalAddress"]);
                 remoteStore = new RemoteStore(ConfigurationManager.AppSettings["ServiceAddress"]);

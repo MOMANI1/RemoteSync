@@ -33,6 +33,7 @@ namespace SyncService
 
         public void UploadFile(RemoteFileInfo request)
         {
+            //must be temp folder in server 
             string workingPath = GetPathToWorkWith();
             FileInfo fi = new FileInfo(Path.Combine(workingPath, request.Metadata.Uri));
 
@@ -58,7 +59,15 @@ namespace SyncService
             }
             GrantAccess(fi.FullName);
             if (workingPath != RemoteDirectoryPath )//useTemp Setting in web.config is true
-                fi.MoveTo(Path.Combine(RemoteDirectoryPath, fi.Name));
+                try
+                {
+                    fi.MoveTo(Path.Combine(RemoteDirectoryPath, fi.Name));
+                }
+                catch (Exception exception)
+                {
+                    fi.Delete();
+                    Console.WriteLine(exception);
+                }
         }
 
         public void DeleteFile(SyncId itemID, string itemUri)
