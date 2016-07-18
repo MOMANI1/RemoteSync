@@ -42,7 +42,8 @@ namespace SyncService
         [OperationContract]
         void StoreKnowledgeForScope(SyncKnowledge knowledge, ForgottenKnowledge forgotten);
 
-
+        [OperationContract]
+        DateTime GetLastWriteTimeUtcForFile(string filepath);
         #region TestClientDemo
 
         [OperationContract]

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -40,8 +41,8 @@ namespace TestClient
 
         private void ApplicationStartUp()
         {
-            localDirectoryPath = txtLocalStore.Text;
-            endPoint = txtEndPoint.Text;
+            txtLocalStore.Text=localDirectoryPath = ConfigurationManager.AppSettings["LocalAddress"];
+            txtEndPoint.Text = endPoint = ConfigurationManager.AppSettings["ServiceAddress"];
 
            localDemo = new Common.TestClientDemo();
            serviceDemo = new TestClientServiceDemo(endPoint);
@@ -62,7 +63,7 @@ namespace TestClient
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            new SyncController().Synchronize(localStore, remoteStore, (ConflictResolutionPolicy)lstConflictresolutionPolicy.SelectedItem, (ConflictResolutionPolicy)lstConflictresolutionPolicy.SelectedItem, (SyncDirectionOrder)lstSyncDirection.SelectedItem, 100, "GENERIC_SCOPE");
+            new SyncController().Synchronize(localStore, remoteStore, (ConflictResolutionPolicy)lstConflictresolutionPolicy.SelectedItem, (ConflictResolutionPolicy)lstConflictresolutionPolicy.SelectedItem, (SyncDirectionOrder)lstSyncDirection.SelectedItem, 100000000, "GENERIC_SCOPE");
             Reload();
         }
 

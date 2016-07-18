@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Configuration;
+using System.Diagnostics;
 using System.IO;
 using System.Security.AccessControl;
 using System.Security.Principal;
@@ -40,7 +42,7 @@ namespace SyncFrameWork.Controllers
 
         public override void EndSession(SyncSessionContext syncSessionContext)
         {
-            sync.Save();
+            sync.Save(ConfigurationManager.AppSettings["LocalAddress"]);
             System.Diagnostics.Debug.WriteLine("_____   Ending Session On LocalStore   ______" );
            
         }
@@ -159,69 +161,89 @@ namespace SyncFrameWork.Controllers
         {
             
             DataTransfer data = context.ChangeData as DataTransfer;
-
-            ItemMetadata item = sync.GetItemMetaData(saveChangeAction, change, data);
-            switch (saveChangeAction)
+         
+            if (data != null && !data.IsNull)
             {
-                case SaveChangeAction.Create:
+                
+            
+            ItemMetadata item = sync.GetItemMetaData(saveChangeAction, change, data);
+                switch (saveChangeAction)
+                {
+                    case SaveChangeAction.Create:
                     {
                         System.Diagnostics.Debug.WriteLine("Create File: " + item.Uri);
                         UpdateOrCreateFile(data, item);
 
                         break;
                     }
-                case SaveChangeAction.UpdateVersionAndData:
-                        {
-                            System.Diagnostics.Debug.WriteLine("UpdateVersion And Data File: " + item.Uri);
-                            UpdateOrCreateFile(data, item);
+                    case SaveChangeAction.UpdateVersionAndData:
+                    {
+                        System.Diagnostics.Debug.WriteLine("UpdateVersion And Data File: " + item.Uri);
+                        UpdateOrCreateFile(data, item);
 
                         break;
-                        }
-                case SaveChangeAction.DeleteAndStoreTombstone:
+                    }
+                    case SaveChangeAction.DeleteAndStoreTombstone:
                     {
                         System.Diagnostics.Debug.WriteLine("   Delete File: " + item.Uri);
-                        if (item.Uri!="")
+                        string path = Path.Combine(folderPath, item.Uri);
+                        if (item.Uri != "" && File.Exists(path))
                         {
-                            File.Delete(Path.Combine(folderPath, item.Uri));
+                            File.Delete(path);
+                        }
+                        else
+                        {
+                            System.Diagnostics.Debug.WriteLine("   Delete File: " + item.Uri + " failled");
+
                         }
                         break;
                     }
-                default:
+                    default:
                     {
                         throw new NotImplementedException(saveChangeAction + " ChangeAction is not implemented!");
                     }
 
-            }
+                }
             sync.GetUpdatedKnowledge(context);
-            
+            }
         }
 
         private void UpdateOrCreateFile(DataTransfer data, ItemMetadata item)
         {
-            string workingPath = GetPathToWorkWith();
-
-            FileInfo fileInfo = new FileInfo(Path.Combine(workingPath, item.Uri));
-
-            if (!fileInfo.Directory.Exists)
-                fileInfo.Directory.Create();
-
-
-            using (FileStream outputStream = new FileStream(Path.Combine(workingPath, item.Uri), FileMode.OpenOrCreate))
+            try
             {
-                const int copyBlockSize = 4096;
-                byte[] buffer = new byte[copyBlockSize];
+                string workingPath = GetPathToWorkWith();
 
-                int bytesRead;
-                while ((bytesRead = data.DataStream.Read(buffer, 0, copyBlockSize)) > 0)
-                    outputStream.Write(buffer, 0, bytesRead);
+                FileInfo fileInfo = new FileInfo(Path.Combine(workingPath, item.Uri));
 
-                outputStream.SetLength(outputStream.Position);
+                if (!fileInfo.Directory.Exists)
+                    fileInfo.Directory.Create();
+
+
+                using (
+                    FileStream outputStream = new FileStream(Path.Combine(workingPath, item.Uri), FileMode.OpenOrCreate)
+                    )
+                {
+                    int copyBlockSize = Convert.ToInt32(ConfigurationManager.AppSettings["copyBlockSize"]);
+                    byte[] buffer = new byte[copyBlockSize];
+
+                    int bytesRead;
+                    while ((bytesRead = data.DataStream.Read(buffer, 0, copyBlockSize)) > 0)
+                        outputStream.Write(buffer, 0, bytesRead);
+
+                    outputStream.SetLength(outputStream.Position);
+                }
+                item.LastWriteTimeUtc = fileInfo.LastWriteTimeUtc;
+                GrantAccess(fileInfo.FullName);
+                data.DataStream.Close();
+                if (workingPath != folderPath /* useTemp*/) //useTemp Setting is true
+                    fileInfo.MoveTo(Path.Combine(folderPath, fileInfo.Name));
             }
-            item.LastWriteTimeUtc = fileInfo.LastWriteTimeUtc;
-            GrantAccess(fileInfo.FullName);
-            data.DataStream.Close();
-            if (workingPath != folderPath /* useTemp*/)//useTemp Setting is true
-                fileInfo.MoveTo(Path.Combine(folderPath, fileInfo.Name));
+            catch (Exception ex)
+            {
+
+                Debug.Assert(false,"Hala 3ammi " + ex.Message);
+            }
         }
 
         private string GetPathToWorkWith()

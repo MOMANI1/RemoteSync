@@ -22,10 +22,19 @@ namespace Common
             {
                 throw new InvalidOperationException("Cannot load change data for a deleted item.");
             }
+            Stream dataStream=null;
+            try
+            {
+                dataStream = new FileStream(Path.Combine(folderPath, item.Uri), FileMode.Open, FileAccess.Read, FileShare.Read);
 
-            Stream dataStream = new FileStream(Path.Combine(folderPath, item.Uri), FileMode.Open, FileAccess.Read, FileShare.Read);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
             DataTransfer transferMechanism = new DataTransfer(dataStream, item.Uri);
 
+           
             return transferMechanism;
         }
     }

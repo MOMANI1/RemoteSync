@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Threading;
 using Microsoft.Synchronization;
 
 namespace Common
@@ -26,6 +27,7 @@ namespace Common
                 this.folderPath = folderPath;
                 Load();
             }
+            this.folderPath = folderPath;
         }
 
         public MetadataStore MetaDataStore
@@ -43,6 +45,7 @@ namespace Common
         public string FolderPath
         {
             get { return folderPath; }
+            set { folderPath = value; }
         }
 
         public SyncId ReplicaId
@@ -292,39 +295,48 @@ namespace Common
                 return true;
             }
         }
+
+
+        Object lockobject = new object();
+
         public void Save()
         {
-            if (!string.IsNullOrEmpty(folderPath))
+
+            lock (lockobject)
             {
                 string syncFile = Path.Combine(folderPath, "file.sync");
-
-                File.Delete(syncFile);
-
-                using (FileStream stream = new FileStream(syncFile, FileMode.OpenOrCreate))
+                System.Diagnostics.Debug.WriteLine("Saving" + syncFile);
+                if (!string.IsNullOrEmpty(folderPath) && File.Exists(syncFile))
                 {
-                    BinaryFormatter bf = new BinaryFormatter();
-                    bf.Serialize(stream, replicaId);
-                    bf.Serialize(stream, tickCount);
-                    bf.Serialize(stream, myKnowledge);
-                    bf.Serialize(stream, myForgottenKnowledge);
+                    File.Delete(syncFile);
 
-                    // Serialize metadatastore
-                    metadataStore.Save(stream);
+                    using (FileStream stream = new FileStream(syncFile, FileMode.OpenOrCreate))
+                    {
+                        BinaryFormatter bf = new BinaryFormatter();
+                        bf.Serialize(stream, replicaId);
+                        bf.Serialize(stream, tickCount);
+                        bf.Serialize(stream, myKnowledge);
+                        bf.Serialize(stream, myForgottenKnowledge);
+
+                        // Serialize metadatastore
+                        metadataStore.Save(stream);
+                    }
+
+                    FileInfo fi = new FileInfo(syncFile);
+                    fi.Attributes = FileAttributes.Hidden | FileAttributes.System;
+                    System.Diagnostics.Debug.WriteLine(syncFile + " Saved succsesfully");
                 }
-
-                FileInfo fi = new FileInfo(syncFile);
-                fi.Attributes = FileAttributes.Hidden | FileAttributes.System;
-            }
-            else
-            {
-                System.Diagnostics.Debug.WriteLine(" ¤Error Save() Without Path ");
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine(" ¤Error Save() Without Path ");
+                }
             }
         }
         public void Save(string path)
         {
 
             string syncFile = Path.Combine(path, "file.sync");
-
+            System.Diagnostics.Debug.WriteLine("Saving"+ syncFile);
             File.Delete(syncFile);
 
             using (FileStream stream = new FileStream(syncFile, FileMode.OpenOrCreate))
@@ -342,6 +354,7 @@ namespace Common
 
             FileInfo fi = new FileInfo(syncFile);
             fi.Attributes = FileAttributes.Hidden | FileAttributes.System;
+            System.Diagnostics.Debug.WriteLine( syncFile+ " Saved succsesfully");
         }
         public void Load()
         {

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using Common;
 using Microsoft.Synchronization;
@@ -29,6 +30,7 @@ namespace SyncFrameWork
                 service = value;
             }
         }
+
         public override object LoadChangeData(Microsoft.Synchronization.LoadChangeContext loadChangeContext)
         {
             ItemMetadata item;
@@ -41,11 +43,23 @@ namespace SyncFrameWork
             }
 
             System.Diagnostics.Debug.WriteLine("Downloading File:" + item.Uri);
-            Stream dataStream = service.DownloadFile(item.Uri);
+            Stream downloadFile=null;
+            try
+            {
+                var watch = System.Diagnostics.Stopwatch.StartNew();
+                downloadFile = service.DownloadFile(item.Uri);
+                watch.Stop();
+                Debug.WriteLine($"downloadFile ElapsedMilliseconds {watch.ElapsedMilliseconds}");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
 
-            DataTransfer transferMechanism = new DataTransfer(dataStream, item.Uri);
-
+            var transferMechanism = new DataTransfer(downloadFile, item.Uri);
             return transferMechanism;
         }
+
     }
+    
 }

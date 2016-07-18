@@ -16,6 +16,7 @@
       <xs:element name="folderPath" nillable="true" type="xs:string" />
       <xs:element xmlns:q1="http://schemas.datacontract.org/2004/07/Microsoft.Synchronization" name="idFormats" nillable="true" type="q1:SyncIdFormatGroup" />
       <xs:element name="localChangedDetected" type="xs:boolean" />
+      <xs:element name="lockobject" nillable="true" type="xs:anyType" />
       <xs:element name="metadataStore" nillable="true" type="tns:MetadataStore" />
       <xs:element xmlns:q2="http://schemas.datacontract.org/2004/07/Microsoft.Synchronization" name="myForgottenKnowledge" nillable="true" type="q2:ForgottenKnowledge" />
       <xs:element xmlns:q3="http://schemas.datacontract.org/2004/07/Microsoft.Synchronization" name="myKnowledge" nillable="true" type="q3:SyncKnowledge" />

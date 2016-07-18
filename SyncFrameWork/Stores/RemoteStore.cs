@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.ServiceModel;
 using Common;
 using Common.DTO;
@@ -28,7 +29,6 @@ namespace SyncFrameWork.Controllers
 
             sync = syncdetails.Cast<RemoteSyncDetails>();
             sync.Service = service;
-
         }
 
         private void ConfigureEndPoint(string endpoint)
@@ -170,43 +170,57 @@ namespace SyncFrameWork.Controllers
         }
         public void SaveItemChange(SaveChangeAction saveChangeAction, ItemChange change, SaveChangeContext context)
         {
-            DataTransfer data = context.ChangeData as DataTransfer;
-
-            switch (saveChangeAction)
+            try
             {
-                case SaveChangeAction.Create:
+                DataTransfer data = context.ChangeData as DataTransfer;
+                if (data!=null && !data.IsNull)
+                {
+                    switch (saveChangeAction)
                     {
-                        ItemMetadata item = new ItemMetadata();
-                        item.ItemId = change.ItemId;
-                        item.ChangeVersion = change.ChangeVersion;
-                        item.CreationVersion = change.CreationVersion;
-                        item.Uri = data.Uri;
+                        case SaveChangeAction.Create:
+                        {
+                            ItemMetadata item = new ItemMetadata();
+                            item.ItemId = change.ItemId;
+                            item.ChangeVersion = change.ChangeVersion;
+                            item.CreationVersion = change.CreationVersion;
+                            item.Uri = data.Uri;
+                            //item.LastWriteTimeUtc =    //fileInfo is not here 
 
-                        data.DataStream.Position = 0;
-                        System.Diagnostics.Debug.WriteLine("Uploading File:" + item.Uri);
-                        service.UploadFile(data.DataStream.Length, item, data.DataStream);
+                            data.DataStream.Position = 0;
+                            Debug.WriteLine("Uploading File:" + item.Uri);
+                            var watch = System.Diagnostics.Stopwatch.StartNew();
+                            service.UploadFile(data.DataStream.Length, item, data.DataStream);
+                            watch.Stop();
+                            Debug.WriteLine($"UploadFile ElapsedMilliseconds {watch.ElapsedMilliseconds}");
+                            item.LastWriteTimeUtc = service.GetLastWriteTimeUtcForFile(item.Uri);
+                            data.DataStream.Close();
+                            sync.UpdateItemItem(item);
 
-                        data.DataStream.Close();
-                        sync.UpdateItemItem(item);
+                            break;
+                        }
+                        case SaveChangeAction.DeleteAndStoreTombstone:
+                        {
+                            ItemMetadata item = sync.GetItemMetaData(saveChangeAction, change, data);
 
-                        break;
+                            sync.DeleteItem(change.ItemId);
+                            service.DeleteFile(change.ItemId, item.Uri);
+                            break;
+                        }
+                        default:
+                        {
+                            throw new NotImplementedException(saveChangeAction + " ChangeAction is not implemented!");
+                        }
+
                     }
-                case SaveChangeAction.DeleteAndStoreTombstone:
-                    {
-                        ItemMetadata item = sync.GetItemMetaData(saveChangeAction, change, data);
 
-                        sync.DeleteItem(change.ItemId);
-                        service.DeleteFile(change.ItemId, item.Uri);
-                        break;
-                    }
-                default:
-                    {
-                        throw new NotImplementedException(saveChangeAction + " ChangeAction is not implemented!");
-                    }
-
+                    context.GetUpdatedDestinationKnowledge(out myKnowledge, out myForgottenKnowledge);
+                }
             }
-
-            context.GetUpdatedDestinationKnowledge(out myKnowledge, out myForgottenKnowledge);
+            catch (Exception exception)
+            {
+                Debug.Assert(false,"hala 3ammi",exception.Message+Environment.NewLine+exception.StackTrace);
+                Console.WriteLine(exception);
+            }
         }
         public void StoreKnowledgeForScope(SyncKnowledge knowledge, ForgottenKnowledge forgottenKnowledge)
         {

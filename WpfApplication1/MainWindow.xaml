@@ -6,13 +6,14 @@
         xmlns:local="clr-namespace:WpfApplication1"
         xmlns:Custom="http://metro.mahapps.com/winfx/xaml/controls" x:Class="WpfApplication1.MainWindow"
         mc:Ignorable="d"
-        Title="Sync Tool" Height="354.232" Width="694.306" Closing="Window_Closing"
+    
+    Title="Sync Tool" Height="347.232" Width="696.306" Closing="Window_Closing"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
     Background="{DynamicResource MaterialDesignPaper}"
    
     FontFamily="pack://application:,,,/MaterialDesignThemes.Wpf;component/Resources/Roboto/#Roboto">
 
-    <Grid>
+    <Grid Margin="0,0,0.4,0.2">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="385"/>
             <ColumnDefinition Width="204"/>
@@ -43,7 +44,7 @@
                 <Label x:Name="ls_Copy1" Content="Unknown" HorizontalAlignment="Left" Margin="178,135,-10,0" VerticalAlignment="Top"/>
                 <Label x:Name="ltw_Copy1" Content="Unknown" HorizontalAlignment="Left" Margin="178,161,-10,-16" VerticalAlignment="Top"/>
                 <Label x:Name="NewState_Copy1" Content="sync #" HorizontalAlignment="Left" Margin="11,183,0,-38" VerticalAlignment="Top"/>
-                <Label x:Name="syncNum" Content="" HorizontalAlignment="Left" Margin="59,183,0,-38" VerticalAlignment="Top"/>
+                <Label x:Name="labelSyncNum" Content="" HorizontalAlignment="Left" Margin="59,183,0,-38" VerticalAlignment="Top"/>
             </Grid>
         </GroupBox>
         <GroupBox
@@ -52,21 +53,21 @@
 			Margin="18,15,0,0"
 			VerticalAlignment="Top"
 			Height="168"
-			Width="368" Grid.ColumnSpan="2">
+			Width="376" Grid.ColumnSpan="2">
             <Grid
 				HorizontalAlignment="Left"
 				Width="358" Margin="0,0,-2.8,-12.4">
-                <TextBox x:Name="textBoxSoure" HorizontalAlignment="Left" Height="23" Margin="100,7,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="237" RenderTransformOrigin="0.5,0.5" />
-                <TextBox x:Name="textBoxDestination" HorizontalAlignment="Left" Height="23" Margin="100,51,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="237"/>
-                <Label x:Name="label" Content="Source                " HorizontalAlignment="Left" Margin="10,7,0,0" VerticalAlignment="Top"/>
-                <Label x:Name="label_Copy1" Content="Destination" HorizontalAlignment="Left" Margin="10,50,0,0" VerticalAlignment="Top"/>
-                <Label x:Name="label_Copy2" Content="Interval" HorizontalAlignment="Left" Margin="10,94,0,0" VerticalAlignment="Top"/>
-                <TextBox x:Name="textBoxSeconds" HorizontalAlignment="Left" Height="23" Margin="256,89,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="38"/>
-                <Slider x:Name="slider" HorizontalAlignment="Left" Margin="100,94,0,0" VerticalAlignment="Top" Width="142" Maximum="1800" Minimum="1" ValueChanged="slider_ValueChanged" />
-
-                <Label x:Name="label2" Content="Seconds" HorizontalAlignment="Left" Margin="299,94,0,0" VerticalAlignment="Top"/>
-                <Button x:Name="buttonSave" Content="Save" HorizontalAlignment="Left" Margin="256,122,0,0" VerticalAlignment="Top" Width="64" Height="24" Click="buttonSave_Click"/>
-                <CheckBox x:Name="checkBoxUseTemp" Content="Use Temp Directory" HorizontalAlignment="Left" Margin="100,122,0,0" VerticalAlignment="Top"/>
+                <TextBox x:Name="textBoxSoure" HorizontalAlignment="Left" Height="23" Margin="114,7,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="237" RenderTransformOrigin="0.5,0.5" />
+                <TextBox x:Name="textBoxDestination" HorizontalAlignment="Left" Height="23" Margin="114,51,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="237"/>
+                <Label x:Name="label" Content="Source                " HorizontalAlignment="Left" Margin="3,7,0,0" VerticalAlignment="Top"/>
+                <Label x:Name="label_Copy1" Content="Destination" HorizontalAlignment="Left" Margin="3,50,0,0" VerticalAlignment="Top"/>
+                <Label x:Name="label_Copy2" Content="Interval in Seconds" HorizontalAlignment="Left" Margin="3,94,0,0" VerticalAlignment="Top"/>
+                <TextBox x:Name="textBoxSeconds" HorizontalAlignment="Left" Height="23" Margin="264,89,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="29"/>
+                <Label x:Name="LabelTime" Content="" HorizontalAlignment="Left" Margin="299,89,0,0" VerticalAlignment="Top"/>
+                <Slider x:Name="slider" HorizontalAlignment="Left" Margin="114,94,0,0" VerticalAlignment="Top" Width="142" Maximum="600" Minimum="1" ValueChanged="slider_ValueChanged" IsSnapToTickEnabled="True" />
+                <Button x:Name="buttonSave" Content="Save" HorizontalAlignment="Left" Margin="270,122,0,0" VerticalAlignment="Top" Width="64" Height="24" Click="buttonSave_Click"/>
+                <CheckBox x:Name="checkBoxUseTemp" Content="Use Temp Directory" HorizontalAlignment="Left" Margin="114,122,0,0" VerticalAlignment="Top"/>
+                
             </Grid>
         </GroupBox>
         <GroupBox
@@ -78,10 +79,10 @@
 			Width="181">
             <Grid
 				HorizontalAlignment="Left"
-				Height="84"
+				Height="91"
 				VerticalAlignment="Top"
 				Width="173" Margin="-2,0,-3,0">
-                <Button x:Name="button" Content="Sync now" HorizontalAlignment="Left" Margin="29,10,0,0" VerticalAlignment="Top" Width="101" Click="button_Click"/>
+                <Button x:Name="buttonSync" Content="Sync now" HorizontalAlignment="Left" Margin="29,10,0,0" VerticalAlignment="Top" Width="101" Click="button_Click"/>
                 <Label x:Name="NewState" Content="Unknown" HorizontalAlignment="Left" Margin="90,51,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.398,0.625"/>
                 <Label x:Name="label1" Content="Status" HorizontalAlignment="Left" Margin="10,51,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.547,0.491"/>
             </Grid>
@@ -100,6 +101,32 @@
         		Width="173" Margin="-2,0,-3,0">
                 <Button x:Name="buttonExit" Content="Exit App" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="153" Click="buttonExit_Click" />
                 <Button x:Name="button1ClearSync" Content="Clear Sync Data" HorizontalAlignment="Left" Margin="10,47,0,0" VerticalAlignment="Top" Width="153" Click="button1ClearSync_Click" />
+            </Grid>
+        </GroupBox>
+        <GroupBox
+            Visibility="Collapsed"
+        	Header="Sync Staged Progress"
+        	HorizontalAlignment="Left"
+        	Margin="23.4,240,-74.6,0"
+        	VerticalAlignment="Top"
+        	Height="143"
+        	Width="256" Grid.Column="1">
+            <Grid
+               
+        		HorizontalAlignment="Left"
+        		Height="146"
+        		Margin="-1,-13,-2.8,-12.2"
+        		VerticalAlignment="Bottom"
+        		Width="247">
+                <Label x:Name="label_Copy3" Content="Completed Work" HorizontalAlignment="Left" Margin="5,24,0,0" VerticalAlignment="Top"/>
+                <Label x:Name="label1_Copy1" Content="Reporting Provider" HorizontalAlignment="Left" Margin="5,55,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.456,0.544"/>
+                <Label x:Name="label2_Copy2" Content="Stage" HorizontalAlignment="Left" Margin="7,81,0,0" VerticalAlignment="Top"/>
+                <Label x:Name="lcw" Content="Unknown" HorizontalAlignment="Left" Margin="132,24,0,0" VerticalAlignment="Top"/>
+                <Label x:Name="lrp" Content="Unknown" HorizontalAlignment="Left" Margin="132,55,0,0" VerticalAlignment="Top"/>
+                <Label x:Name="ls" Content="Unknown" HorizontalAlignment="Left" Margin="132,81,0,0" VerticalAlignment="Top"/>
+                <Label x:Name="syncNum1" Content="" HorizontalAlignment="Left" Margin="59,183,0,-38" VerticalAlignment="Top"/>
+                <Label x:Name="label2_Copy3" Content="Total Work" HorizontalAlignment="Left" Margin="7,105,0,0" VerticalAlignment="Top"/>
+                <Label x:Name="ltw" Content="Unknown" HorizontalAlignment="Left" Margin="132,105,0,0" VerticalAlignment="Top"/>
             </Grid>
         </GroupBox>
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Configuration;
+using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
@@ -14,6 +15,8 @@ using Common;
 using Microsoft.Synchronization;
 using SyncFrameWork.Controllers;
 using SyncFrameWork.TestClient;
+using SyncTool;
+using MessageBox = System.Windows.MessageBox;
 using MouseEventArgs = System.Windows.Input.MouseEventArgs;
 using Timer = System.Timers.Timer;
 
@@ -36,7 +39,7 @@ namespace WpfApplication1
         private ContextMenuStrip m_contextMenu;
         private bool _ForceClose;
         private int i = 0;
-
+      
         public MainWindow()
         {
             InitializeComponent();
@@ -61,8 +64,6 @@ namespace WpfApplication1
             if (!worker.IsBusy)
             {
                 worker.RunWorkerAsync();
-                this.Dispatcher.Invoke((Action)(() => syncNum.Content = ++i));
-
             }
         }
 
@@ -70,6 +71,7 @@ namespace WpfApplication1
         {
             textBoxSoure.Text = AppSettings.Get<string>("LocalAddress");
             textBoxDestination.Text = AppSettings.Get<string>("ServiceAddress");
+            slider.Value= AppSettings.Get<int>("AutoSyncInterval");
             textBoxSeconds.Text = AppSettings.Get<string>("AutoSyncInterval");
             checkBoxUseTemp.IsChecked = AppSettings.Get<bool>("UseTemp");
         }
@@ -128,11 +130,20 @@ namespace WpfApplication1
         #region sync
 
         private bool firstTimeSync = true;
+
         public void SyncProcces()
         {
-            #region comments
+            try
+            {
 
-            /*LoadStores();
+                Dispatcher.Invoke(() =>
+                {
+                    buttonSync.IsEnabled = false;
+                });
+
+                #region comments
+
+                /*LoadStores();
 
                         #region config
 
@@ -157,30 +168,42 @@ namespace WpfApplication1
                         LoadStores();
                         */
 
-            #endregion
-            if (firstTimeSync)
-            {
-                localStore = new LocalStore(ConfigurationManager.AppSettings["LocalAddress"]);
-                remoteStore = new RemoteStore(ConfigurationManager.AppSettings["ServiceAddress"]);
-                firstTimeSync = false;
+                #endregion
+
+                if (firstTimeSync)
+                {
+                    localStore = new LocalStore(ConfigurationManager.AppSettings["LocalAddress"]);
+                    remoteStore = new RemoteStore(ConfigurationManager.AppSettings["ServiceAddress"]);
+                    firstTimeSync = false;
+                }
+                localStore.RequestedBatchSize = 100000000;
+                remoteStore.RequestedBatchSize = 100000000;
+
+                localStore.Configuration.ConflictResolutionPolicy = ConflictResolutionPolicy.ApplicationDefined;
+                remoteStore.Configuration.ConflictResolutionPolicy = ConflictResolutionPolicy.ApplicationDefined;
+
+                SyncOrchestrator syncAgent = new SyncOrchestrator();
+                syncAgent.StateChanged += SyncAgentOnStateChanged;
+                //syncAgent.SessionProgress += SyncAgentOnSessionProgress;
+                syncAgent.LocalProvider = localStore;
+                syncAgent.RemoteProvider = remoteStore;
+                syncAgent.Direction = SyncDirectionOrder.UploadAndDownload;
+
+                SyncOperationStatistics statistics = syncAgent.Synchronize();
+                PrintStatistics(statistics);
+                LoadStores();
+                Dispatcher.Invoke(() =>
+                {
+                    buttonSync.IsEnabled = true;
+                    labelSyncNum.Content = ++i;
+                });
             }
-            localStore.RequestedBatchSize = 100;
-            remoteStore.RequestedBatchSize = 100;
-
-            localStore.Configuration.ConflictResolutionPolicy = ConflictResolutionPolicy.SourceWins;
-            remoteStore.Configuration.ConflictResolutionPolicy = ConflictResolutionPolicy.SourceWins;
-
-            SyncOrchestrator syncAgent = new SyncOrchestrator();
-            syncAgent.StateChanged += SyncAgentOnStateChanged;
-
-            syncAgent.LocalProvider = localStore;
-            syncAgent.RemoteProvider = remoteStore;
-            syncAgent.Direction = SyncDirectionOrder.UploadAndDownload;
-
-            SyncOperationStatistics statistics = syncAgent.Synchronize();
-            PrintStatistics(statistics);
-            LoadStores();
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message + Environment.NewLine + ex.StackTrace);
+            }
         }
+
 
         private void LoadStores()
         {
@@ -218,10 +241,10 @@ namespace WpfApplication1
         {
             Dispatcher.Invoke(() =>
             {
-                //                lcw.Content = $"{syncStagedProgressEventArgs.CompletedWork}";
-                //                lrp.Content = $"{syncStagedProgressEventArgs.ReportingProvider}";
-                //                ls.Content = $"{syncStagedProgressEventArgs.Stage}";
-                //                ltw.Content = $"{syncStagedProgressEventArgs.TotalWork}";
+                lcw.Content = $"{syncStagedProgressEventArgs.CompletedWork}";
+                lrp.Content = $"{syncStagedProgressEventArgs.ReportingProvider}";
+                ls.Content = $"{syncStagedProgressEventArgs.Stage}";
+                ltw.Content = $"{syncStagedProgressEventArgs.TotalWork}";
             });
 
         }
@@ -263,13 +286,26 @@ namespace WpfApplication1
         private void slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             textBoxSeconds.Text = e.NewValue.ToString();
+            string answer = GetUserFrindlyTimeFromSeconds(e);
+            LabelTime.Content = answer;
+        }
+
+        private static string GetUserFrindlyTimeFromSeconds(RoutedPropertyChangedEventArgs<double> e)
+        {
+            TimeSpan t = TimeSpan.FromSeconds(e.NewValue);
+            string answer = string.Format("{0:D2}:{1:D2}:{2:D2}",
+                                    t.Hours,
+                                    t.Minutes,
+                                    t.Seconds,
+                                    t.Milliseconds);
+            return answer;
         }
 
         private void buttonSave_Click(object sender, RoutedEventArgs e)
         {
             string appPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             //string configFile = System.IO.Path.Combine(appPath, "App.config");
-            string configFile = Path.Combine(appPath, "SyncTool.exe.config");
+            string configFile = Path.Combine(appPath, "SyncTool.exe" + ".config");
 
             ExeConfigurationFileMap configFileMap = new ExeConfigurationFileMap();
             configFileMap.ExeConfigFilename = configFile;
@@ -288,7 +324,7 @@ namespace WpfApplication1
             EndApplication();
         }
 
-        //this button to be clicked in case dead lock
+        //this buttonSync to be clicked in case dead lock
         private void button1ClearSync_Click(object sender, RoutedEventArgs e)
         {
             DeleteSyncFiles();

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Diagnostics;
 using System.IO;
 using System.Security.AccessControl;
 using System.Security.Principal;
@@ -33,40 +34,67 @@ namespace SyncService
 
         public void UploadFile(RemoteFileInfo request)
         {
-            string workingPath = GetPathToWorkWith();
-            FileInfo fi = new FileInfo(Path.Combine(workingPath, request.Metadata.Uri));
-
-            if (!fi.Directory.Exists)
+            try
             {
-                fi.Directory.Create();
-            }
+                string workingPath = GetPathToWorkWith();
+                FileInfo fi = new FileInfo(Path.Combine(workingPath, request.Metadata.Uri));
 
-            fi.Delete();
-
-            int chunkSize = 2048;
-            byte[] buffer = new byte[chunkSize];
-
-            using (FileStream writeStream = new FileStream(fi.FullName, FileMode.CreateNew, FileAccess.ReadWrite))
-            {
-                do
+                if (!fi.Directory.Exists)
                 {
-                    int bytesRead = request.FileByteStream.Read(buffer, 0, chunkSize);
-                    if (bytesRead == 0) break;
+                    fi.Directory.Create();
+                }
 
-                    writeStream.Write(buffer, 0, bytesRead);
-                } while (true);
+                fi.Delete();
+
+                int chunkSize = Convert.ToInt32(ConfigurationManager.AppSettings["chunkSize"]); 
+                byte[] buffer = new byte[chunkSize];
+
+                using (FileStream writeStream = new FileStream(fi.FullName, FileMode.CreateNew, FileAccess.ReadWrite))
+                {
+                    do
+                    {
+                        int bytesRead = request.FileByteStream.Read(buffer, 0, chunkSize);
+                        if (bytesRead == 0) break;
+
+                        writeStream.Write(buffer, 0, bytesRead);
+                    } while (true);
+                }
+                //item.LastWriteTimeUtc = fi.LastWriteTimeUtc;
+                GrantAccess(fi.FullName);
+                if (workingPath != RemoteDirectoryPath) //useTemp Setting in web.config is true
+                    fi.MoveTo(Path.Combine(RemoteDirectoryPath, fi.Name));
             }
-            GrantAccess(fi.FullName);
-            if (workingPath != RemoteDirectoryPath )//useTemp Setting in web.config is true
-                fi.MoveTo(Path.Combine(RemoteDirectoryPath, fi.Name));
+            catch (Exception exception)
+            {
+                Debug.Assert(false, "Hala 3ammi " + exception.Message);
+            }
+          
+        }
+
+        public DateTime GetLastWriteTimeUtcForFile(string uri)
+        {
+            try
+            {
+                FileInfo fi = new FileInfo(Path.Combine(RemoteDirectoryPath, uri));
+                return fi.LastWriteTimeUtc;
+            }
+            catch (Exception exception)
+            {
+                Debug.Assert(false, "Hala 3ammi " + exception.Message);
+            }
+            return new DateTime();
         }
 
         public void DeleteFile(SyncId itemID, string itemUri)
         {
-
-            if (itemUri!="")
+            var path = Path.Combine(RemoteDirectoryPath, itemUri);
+            if (itemUri!="" && File.Exists(path))
             {
-                File.Delete(Path.Combine(RemoteDirectoryPath, itemUri));
+                File.Delete(path);
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine("   Delete File: " + itemUri + "failled");
             }
         }
 
@@ -83,7 +111,7 @@ namespace SyncService
         {
             ChangeBatchTransfer changeBatch = new ChangeBatchTransfer();
             object dataRetriver = new object();
-            changeBatch.ChangeBatch = syncDetails.GetChangeBatch(RemoteDirectoryPath, batchSize, destinationKnowledge, out dataRetriver);
+            changeBatch.ChangeBatch = syncDetails.GetChangeBatch(RemoteDirectoryPath, 1000000, destinationKnowledge, out dataRetriver);
             changeBatch.ChangeDataRetriever = dataRetriver;
 
             return changeBatch.ObjectToByteArray();
@@ -97,7 +125,16 @@ namespace SyncService
 
         public Stream DownloadFile(string file)
         {
-            return new FileStream(Path.Combine(RemoteDirectoryPath, file), FileMode.Open, FileAccess.Read, FileShare.Read);
+            //in case the process cannot access the file because it is being used by another process or any IO Exception
+            try
+            {
+                return new FileStream(Path.Combine(RemoteDirectoryPath, file), FileMode.Open, FileAccess.Read, FileShare.Read);
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+                //return Stream.Null;
+            }
         }
 
         #region TestClientDemo
@@ -161,6 +198,15 @@ namespace SyncService
                 workingPath = RemoteDirectoryPath;
             return workingPath;
         }
-    }
+        private void WriteToEventLog(string message)
+        {
+            string cs = "Application";
 
+            EventLog elog = new EventLog();
+            if (!EventLog.SourceExists(cs))
+                EventLog.CreateEventSource(cs, "Application");
+
+            EventLog.WriteEntry(cs, message, EventLogEntryType.Error);
+        }
+    }
 }

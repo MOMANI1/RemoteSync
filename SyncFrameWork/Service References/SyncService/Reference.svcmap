@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ReferenceGroup xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ID="dea758b4-0842-492c-b66f-3e7a8ad7343d" xmlns="urn:schemas-microsoft-com:xml-wcfservicemap">
+<ReferenceGroup xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ID="2a1ca611-699f-40db-b11b-8e49284be8e7" xmlns="urn:schemas-microsoft-com:xml-wcfservicemap">
   <ClientOptions>
     <GenerateAsynchronousMethods>false</GenerateAsynchronousMethods>
     <EnableDataBinding>true</EnableDataBinding>
@@ -21,15 +21,15 @@
     <MetadataSource Address="http://localhost:5032/SyncService.svc" Protocol="http" SourceId="1" />
   </MetadataSources>
   <Metadata>
-    <MetadataFile FileName="SyncService.xsd" MetadataType="Schema" ID="88efa924-2a4a-42e0-a0aa-53f797f07ffd" SourceId="1" SourceUrl="http://localhost:5032/SyncService.svc?xsd=xsd2" />
-    <MetadataFile FileName="SyncService1.xsd" MetadataType="Schema" ID="e0a92c1f-1c38-4913-9374-be94c0ddd44a" SourceId="1" SourceUrl="http://localhost:5032/SyncService.svc?xsd=xsd3" />
-    <MetadataFile FileName="SyncService.wsdl" MetadataType="Wsdl" ID="7b9e3441-9dc4-49de-9839-3b46f0db8160" SourceId="1" SourceUrl="http://localhost:5032/SyncService.svc?wsdl" />
-    <MetadataFile FileName="SyncService2.xsd" MetadataType="Schema" ID="9510f03b-1c63-43c8-8dd8-bc7e4c9630ad" SourceId="1" SourceUrl="http://localhost:5032/SyncService.svc?xsd=xsd1" />
-    <MetadataFile FileName="SyncService3.xsd" MetadataType="Schema" ID="5b0ef78b-dd17-4411-8d57-8821309e7c6c" SourceId="1" SourceUrl="http://localhost:5032/SyncService.svc?xsd=xsd6" />
-    <MetadataFile FileName="SyncService.disco" MetadataType="Disco" ID="ac5f507c-7c5f-4ad2-8fd5-05d899ddaae5" SourceId="1" SourceUrl="http://localhost:5032/SyncService.svc?disco" />
-    <MetadataFile FileName="SyncService4.xsd" MetadataType="Schema" ID="96ea4e79-42a1-4f2c-8360-99d0adbb503c" SourceId="1" SourceUrl="http://localhost:5032/SyncService.svc?xsd=xsd0" />
-    <MetadataFile FileName="SyncService5.xsd" MetadataType="Schema" ID="18cc8ae9-5458-4b1f-a34d-7bf3070c76da" SourceId="1" SourceUrl="http://localhost:5032/SyncService.svc?xsd=xsd5" />
-    <MetadataFile FileName="SyncService7.xsd" MetadataType="Schema" ID="7df06515-ed91-48e2-882c-7f78b63d601f" SourceId="1" SourceUrl="http://localhost:5032/SyncService.svc?xsd=xsd4" />
+    <MetadataFile FileName="SyncService.xsd" MetadataType="Schema" ID="d22bb2d7-d0e1-43dd-a08f-49ad451728f3" SourceId="1" SourceUrl="http://localhost:5032/SyncService.svc?xsd=xsd2" />
+    <MetadataFile FileName="SyncService1.xsd" MetadataType="Schema" ID="dec22b92-4ec5-4f8f-8381-c22d59240c55" SourceId="1" SourceUrl="http://localhost:5032/SyncService.svc?xsd=xsd3" />
+    <MetadataFile FileName="SyncService.wsdl" MetadataType="Wsdl" ID="093aef22-58f0-41f4-99ef-dac4c88e02ae" SourceId="1" SourceUrl="http://localhost:5032/SyncService.svc?wsdl" />
+    <MetadataFile FileName="SyncService2.xsd" MetadataType="Schema" ID="2e61f9f0-bef5-4ae0-9ea8-58b0bd138f68" SourceId="1" SourceUrl="http://localhost:5032/SyncService.svc?xsd=xsd1" />
+    <MetadataFile FileName="SyncService3.xsd" MetadataType="Schema" ID="775a0271-dba8-4a64-b277-374f4d3d32ab" SourceId="1" SourceUrl="http://localhost:5032/SyncService.svc?xsd=xsd6" />
+    <MetadataFile FileName="SyncService.disco" MetadataType="Disco" ID="c77104b5-d994-4d90-a978-e606f853e89f" SourceId="1" SourceUrl="http://localhost:5032/SyncService.svc?disco" />
+    <MetadataFile FileName="SyncService4.xsd" MetadataType="Schema" ID="695a6306-7e7e-418a-9019-6ad5f86b265a" SourceId="1" SourceUrl="http://localhost:5032/SyncService.svc?xsd=xsd0" />
+    <MetadataFile FileName="SyncService5.xsd" MetadataType="Schema" ID="a90228bc-5697-427a-81c5-f5aab958a4dd" SourceId="1" SourceUrl="http://localhost:5032/SyncService.svc?xsd=xsd5" />
+    <MetadataFile FileName="SyncService6.xsd" MetadataType="Schema" ID="222d8fb3-34ed-4450-bbbd-5b0b23ba8be1" SourceId="1" SourceUrl="http://localhost:5032/SyncService.svc?xsd=xsd4" />
   </Metadata>
   <Extensions>
     <ExtensionFile FileName="configuration91.svcinfo" Name="configuration91.svcinfo" />

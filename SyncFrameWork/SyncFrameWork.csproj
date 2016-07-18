@@ -53,18 +53,19 @@
       <HintPath>..\..\..\..\..\Program Files (x86)\Microsoft SDKs\Microsoft Sync Framework\2.1\Runtime\x86\Microsoft.Synchronization.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controllers\ServiceSyncDetails.cs" />
     <Compile Include="Service References\SyncService\Reference.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Reference.svcmap</DependentUpon>
     </Compile>
-    <Compile Include="Controllers\ServiceSyncDetails.cs" />
     <Compile Include="TestClient\TestClientServiceDemo.cs" />
     <Compile Include="Controllers\SyncController.cs" />
     <Compile Include="Stores\LocalStore.cs" />
@@ -100,18 +101,18 @@
     <None Include="Service References\SyncService\SyncService5.xsd">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Service References\SyncService\SyncService7.xsd">
+    <None Include="Service References\SyncService\SyncService6.xsd">
       <SubType>Designer</SubType>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <WCFMetadataStorage Include="Service References\SyncService\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Common\Common.csproj">
       <Project>{2F4F0D25-B27F-400A-97DA-3C93931F7A14}</Project>
       <Name>Common</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadataStorage Include="Service References\SyncService\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Service References\SyncService\SyncService.disco" />
