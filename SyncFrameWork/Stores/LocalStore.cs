@@ -50,6 +50,7 @@ namespace SyncFrameWork.Controllers
         public override ChangeBatch GetChangeBatch(uint batchSize, SyncKnowledge destinationKnowledge, out object changeDataRetriever)
         {
             return sync.GetChangeBatch(batchSize, destinationKnowledge, out changeDataRetriever);
+
         }
 
         public override FullEnumerationChangeBatch GetFullEnumerationChangeBatch(uint batchSize, SyncId lowerEnumerationBound, SyncKnowledge knowledgeForDataRetrieval,out object changeDataRetriever)
@@ -84,6 +85,7 @@ namespace SyncFrameWork.Controllers
         public override void ProcessChangeBatch(ConflictResolutionPolicy resolutionPolicy, ChangeBatch sourceChanges, 
             object changeDataRetriever, SyncCallbacks syncCallback, SyncSessionStatistics sessionStatistics)
         {
+            NetLog.Log.Info("Enter LocalStore::ProcessChangeBatch");
             
             ChangeBatch localVersions = sync.GetChanges(sourceChanges);
 
@@ -95,7 +97,7 @@ namespace SyncFrameWork.Controllers
             changeApplier.ApplyChanges(resolutionPolicy, CollisionConflictResolutionPolicy.Merge, sourceChanges,
         (IChangeDataRetriever)changeDataRetriever, localVersions, sync.SyncKnowledge.Clone(),
         destinationForgottenKnowledge, this, _memConflictLog, currentSessionContext, syncCallback);
-            
+            NetLog.Log.Info("End LocalStore::ProcessChangeBatch");
         }
 
         public override void ProcessFullEnumerationChangeBatch(ConflictResolutionPolicy resolutionPolicy,
@@ -159,57 +161,61 @@ namespace SyncFrameWork.Controllers
         /// <param name="context"></param>
         public void SaveItemChange(SaveChangeAction saveChangeAction, ItemChange change, SaveChangeContext context)
         {
-            
             DataTransfer data = context.ChangeData as DataTransfer;
-         
-            if (data != null && !data.IsNull)
+            if (data != null)
             {
+                NetLog.Log.Info($"Enter LocalStore::SaveItemChange, trying to save Item {data.Uri} stream IsNull: {data.IsNull}");
+                if (!data.IsNull)
+                {
                 
             
-            ItemMetadata item = sync.GetItemMetaData(saveChangeAction, change, data);
-                switch (saveChangeAction)
-                {
-                    case SaveChangeAction.Create:
+                    ItemMetadata item = sync.GetItemMetaData(saveChangeAction, change, data);
+                    switch (saveChangeAction)
                     {
-                        System.Diagnostics.Debug.WriteLine("Create File: " + item.Uri);
-                        UpdateOrCreateFile(data, item);
-
-                        break;
-                    }
-                    case SaveChangeAction.UpdateVersionAndData:
-                    {
-                        System.Diagnostics.Debug.WriteLine("UpdateVersion And Data File: " + item.Uri);
-                        UpdateOrCreateFile(data, item);
-
-                        break;
-                    }
-                    case SaveChangeAction.DeleteAndStoreTombstone:
-                    {
-                        System.Diagnostics.Debug.WriteLine("   Delete File: " + item.Uri);
-                        string path = Path.Combine(folderPath, item.Uri);
-                        if (item.Uri != "" && File.Exists(path))
+                        case SaveChangeAction.Create:
                         {
-                            File.Delete(path);
+                            System.Diagnostics.Debug.WriteLine("Create File: " + item.Uri);
+                            UpdateOrCreateFile(data, item);
+
+                            break;
                         }
-                        else
+                        case SaveChangeAction.UpdateVersionAndData:
                         {
-                            System.Diagnostics.Debug.WriteLine("   Delete File: " + item.Uri + " failled");
+                            System.Diagnostics.Debug.WriteLine("UpdateVersion And Data File: " + item.Uri);
+                            UpdateOrCreateFile(data, item);
 
+                            break;
                         }
-                        break;
-                    }
-                    default:
-                    {
-                        throw new NotImplementedException(saveChangeAction + " ChangeAction is not implemented!");
-                    }
+                        case SaveChangeAction.DeleteAndStoreTombstone:
+                        {
+                            System.Diagnostics.Debug.WriteLine("   Delete File: " + item.Uri);
+                            string path = Path.Combine(folderPath, item.Uri);
+                            if (item.Uri != "" && File.Exists(path))
+                            {
+                                File.Delete(path);
+                            }
+                            else
+                            {
+                                System.Diagnostics.Debug.WriteLine("   Delete File: " + item.Uri + " failled");
 
+                            }
+                            break;
+                        }
+                        default:
+                        {
+                            throw new NotImplementedException(saveChangeAction + " ChangeAction is not implemented!");
+                        }
+
+                    }
+                    sync.GetUpdatedKnowledge(context);
                 }
-            sync.GetUpdatedKnowledge(context);
             }
         }
 
         private void UpdateOrCreateFile(DataTransfer data, ItemMetadata item)
         {
+            NetLog.Log.Info("Enter LocalStore::UpdateOrCreateFile");
+
             try
             {
                 string workingPath = GetPathToWorkWith();
@@ -229,8 +235,11 @@ namespace SyncFrameWork.Controllers
 
                     int bytesRead;
                     while ((bytesRead = data.DataStream.Read(buffer, 0, copyBlockSize)) > 0)
+                    {
+                      //  NetLog.Log.Info("write Downloaded file On disk, bytesRead"+ bytesRead);
                         outputStream.Write(buffer, 0, bytesRead);
-
+                    }
+                    NetLog.Log.Info("write Downloaded file On disk, Ended" + bytesRead);
                     outputStream.SetLength(outputStream.Position);
                 }
                 item.LastWriteTimeUtc = fileInfo.LastWriteTimeUtc;

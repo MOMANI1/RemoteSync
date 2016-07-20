@@ -7,13 +7,13 @@
         xmlns:Custom="http://metro.mahapps.com/winfx/xaml/controls" x:Class="WpfApplication1.MainWindow"
         mc:Ignorable="d"
     
-    Title="Sync Tool" Height="347.232" Width="696.306" Closing="Window_Closing"
+    Title="Sync Tool" Height="408.832" Width="696.306" Closing="Window_Closing"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
     Background="{DynamicResource MaterialDesignPaper}"
    
     FontFamily="pack://application:,,,/MaterialDesignThemes.Wpf;component/Resources/Roboto/#Roboto">
 
-    <Grid Margin="0,0,0.4,0.2">
+    <Grid Margin="0,0,0.6,-2.8">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="385"/>
             <ColumnDefinition Width="204"/>
@@ -67,7 +67,7 @@
                 <Slider x:Name="slider" HorizontalAlignment="Left" Margin="114,94,0,0" VerticalAlignment="Top" Width="142" Maximum="600" Minimum="1" ValueChanged="slider_ValueChanged" IsSnapToTickEnabled="True" />
                 <Button x:Name="buttonSave" Content="Save" HorizontalAlignment="Left" Margin="270,122,0,0" VerticalAlignment="Top" Width="64" Height="24" Click="buttonSave_Click"/>
                 <CheckBox x:Name="checkBoxUseTemp" Content="Use Temp Directory" HorizontalAlignment="Left" Margin="114,122,0,0" VerticalAlignment="Top"/>
-                
+
             </Grid>
         </GroupBox>
         <GroupBox
@@ -75,25 +75,25 @@
 			HorizontalAlignment="Left"
 			Margin="18,199,0,0"
 			VerticalAlignment="Top"
-			Height="107"
-			Width="181">
+			Height="103"
+			Width="158">
             <Grid
 				HorizontalAlignment="Left"
-				Height="91"
+				Height="93"
 				VerticalAlignment="Top"
-				Width="173" Margin="-2,0,-3,0">
+				Width="154" Margin="-2,0,-5.6,-11.4">
                 <Button x:Name="buttonSync" Content="Sync now" HorizontalAlignment="Left" Margin="29,10,0,0" VerticalAlignment="Top" Width="101" Click="button_Click"/>
-                <Label x:Name="NewState" Content="Unknown" HorizontalAlignment="Left" Margin="90,51,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.398,0.625"/>
+                <Label x:Name="NewState" Content="Unknown" HorizontalAlignment="Left" Margin="76,51,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.398,0.625"/>
                 <Label x:Name="label1" Content="Status" HorizontalAlignment="Left" Margin="10,51,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.547,0.491"/>
             </Grid>
         </GroupBox>
         <GroupBox
         	Header="Others"
         	HorizontalAlignment="Left"
-        	Margin="213,199,0,0"
+        	Margin="23.4,240,0,0"
         	VerticalAlignment="Top"
         	Height="107"
-        	Width="181" Grid.ColumnSpan="2">
+        	Width="181" Grid.Column="1">
             <Grid
         		HorizontalAlignment="Left"
         		Height="84"
@@ -129,6 +129,29 @@
                 <Label x:Name="ltw" Content="Unknown" HorizontalAlignment="Left" Margin="132,105,0,0" VerticalAlignment="Top"/>
             </Grid>
         </GroupBox>
+        <GroupBox
+            Visibility="Hidden"
+            Name="GroupBoxSession"
+        	Header="Current Sync Session"
+        	HorizontalAlignment="Left"
+        	Margin="181,199,0,0"
+        	VerticalAlignment="Top"
+        	Height="103"
+        	Width="213" Grid.ColumnSpan="2">
+            <Grid
+        		HorizontalAlignment="Left"
+        		Height="90"
+        		VerticalAlignment="Top"
+        		Width="197" Margin="-2,0,-2.2,0">
+                <Label x:Name="LabelFileName" Content="" HorizontalAlignment="Left" Margin="80,3,-9,0" VerticalAlignment="Top" RenderTransformOrigin="0.398,0.625" Width="126"/>
+                <Label x:Name="LabelOperation" Content="" HorizontalAlignment="Left" Margin="80,32,-9,0" VerticalAlignment="Top" RenderTransformOrigin="0.398,0.625" Width="126"/>
+                <Label x:Name="LabelStatus" Content="" HorizontalAlignment="Left" Margin="80,61,-9,0" VerticalAlignment="Top" RenderTransformOrigin="0.398,0.625" Width="126"/>
+                <Label x:Name="LabelOperation_Copy2" Content="File" HorizontalAlignment="Left" Margin="9,3,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.398,0.625" Width="66"/>
+                <Label x:Name="LabelOperation_Copy3" Content="Operation" HorizontalAlignment="Left" Margin="9,32,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.398,0.625" Width="66"/>
+                <Label x:Name="LabelOperation_Copy4" Content="Status" HorizontalAlignment="Left" Margin="9,61,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.398,0.625" Width="66"/>
+            </Grid>
+        </GroupBox>
+        
 
     </Grid>
 </Window>

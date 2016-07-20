@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading;
@@ -74,6 +75,8 @@ namespace Common
 
         public ChangeBatch GetChangeBatch(uint batchSize, SyncKnowledge destinationKnowledge, out object changeDataRetriever)
         {
+            NetLog.Log.Info("Enter LocalStore::SyncDetails::GetChangeBatch");
+
             GetNextTickCount();
 
             List<ItemChange> changes = DetectChanges(destinationKnowledge, batchSize);
@@ -95,11 +98,13 @@ namespace Common
             }
 
             changeDataRetriever = this;
+            NetLog.Log.Info("End LocalStore::SyncDetails::GetChangeBatch");
             return changeBatchBuilder; 
         }
 
         public ChangeBatch GetChangeBatch(string path, uint batchSize, SyncKnowledge destinationKnowledge, out object changeDataRetriever)
         {
+            NetLog.Log.Info("Enter LocalStore::SyncDetails::GetChangeBatch");
             folderPath = path;
             GetNextTickCount();
 
@@ -122,13 +127,14 @@ namespace Common
 
 
             changeDataRetriever = this;
-
+            NetLog.Log.Info("End LocalStore::SyncDetails::GetChangeBatch");
             return changeBatchBuilder; 
         }
 
 
         public ChangeBatch GetChanges(ChangeBatch sourceChanges)
         {
+            NetLog.Log.Info("Enter SyncDetails::GetChanges ");
 
             GetNextTickCount(); 
             myKnowledge.SetLocalTickCount(tickCount);
@@ -144,6 +150,7 @@ namespace Common
                 if (metadataStore.TryGetItem(ic.ItemId, out item))
                 {
                     System.Diagnostics.Debug.WriteLine("Remote item has   local counterpart::" + item.Uri);
+                    NetLog.Log.Info("Remote item has   local counterpart::" + item.Uri);
                     change = new ItemChange(IdFormats, ReplicaId, item.ItemId,
                         (item.IsTombstone ? ChangeKind.Deleted : ChangeKind.Update),
                         item.CreationVersion, item.ChangeVersion);
@@ -152,19 +159,23 @@ namespace Common
                 else
                 {
                     if (item == null)
-                        System.Diagnostics.Debug.WriteLine("Remote item has no local counterpart: item.uri is null");
+                        System.Diagnostics.Debug.WriteLine("Remote item has no local counterpart: item is null");
                     else
-                        System.Diagnostics.Debug.WriteLine("Remote item has no local counterpart:" + item.Uri);
-
+                    {
+                        Debug.WriteLine("Remote item has no local counterpart:" + item.Uri);
+                        NetLog.Log.Info("Remote item has no local counterpart::" + item.Uri);
+                    }
 
                     change = new ItemChange(IdFormats, replicaId, ic.ItemId, ChangeKind.UnknownItem,
                         SyncVersion.UnknownVersion, SyncVersion.UnknownVersion);
 
                 }
                 changes.Add(change);
+                NetLog.Log.Info("End SyncDetails::GetChanges ");
+
             }
 
- 
+
             ChangeBatch changeBatchBuilder = new ChangeBatch(IdFormats, myKnowledge , myForgottenKnowledge);
 
             changeBatchBuilder.BeginUnorderedGroup();
@@ -305,6 +316,8 @@ namespace Common
             lock (lockobject)
             {
                 string syncFile = Path.Combine(folderPath, "file.sync");
+                NetLog.Log.Info("Enter SyncDetails::Save " + syncFile);
+
                 System.Diagnostics.Debug.WriteLine("Saving" + syncFile);
                 if (!string.IsNullOrEmpty(folderPath) && File.Exists(syncFile))
                 {
@@ -330,12 +343,16 @@ namespace Common
                 {
                     System.Diagnostics.Debug.WriteLine(" ¤Error Save() Without Path ");
                 }
+                NetLog.Log.Info("End SyncDetails::Save " + syncFile);
+
             }
+
         }
         public void Save(string path)
         {
 
             string syncFile = Path.Combine(path, "file.sync");
+            NetLog.Log.Info("Enter SyncDetails::Save " + syncFile);
             System.Diagnostics.Debug.WriteLine("Saving"+ syncFile);
             File.Delete(syncFile);
 
@@ -355,10 +372,13 @@ namespace Common
             FileInfo fi = new FileInfo(syncFile);
             fi.Attributes = FileAttributes.Hidden | FileAttributes.System;
             System.Diagnostics.Debug.WriteLine( syncFile+ " Saved succsesfully");
+            NetLog.Log.Info("End SyncDetails::Save " + syncFile);
+
         }
         public void Load()
         {
             string syncFile = Path.Combine(folderPath, "file.sync");
+            NetLog.Log.Info("Enter SyncDetails::Load "+ syncFile);
 
             if (File.Exists(syncFile))
             {
@@ -387,6 +407,7 @@ namespace Common
                 myKnowledge = new SyncKnowledge(IdFormats, ReplicaId, tickCount);
                 myForgottenKnowledge = new ForgottenKnowledge(IdFormats, myKnowledge);
             }
+            NetLog.Log.Info("End SyncDetails::Load " + syncFile);
         }
 
         public static SyncIdFormatGroup GetIdFormat()
@@ -414,6 +435,7 @@ namespace Common
 
         private List<ItemChange> DetectChanges(SyncKnowledge destinationKnowledge, uint batchSize)
         {
+            NetLog.Log.Info("Enter SyncDetails::DetectChanges");
             System.Diagnostics.Debug.WriteLine(" Start DetectChanges in:" + folderPath);
 
             List<ItemChange> changeBatch = new List<ItemChange>();
@@ -466,12 +488,15 @@ namespace Common
                     break;
             }
             System.Diagnostics.Debug.WriteLine("        #### End DetectChanges ####");
+            NetLog.Log.Info("End SyncDetails::DetectChanges");
             return changeBatch;
         }
 
   
         private void FindLocalFileChanges(string path)
         {
+            NetLog.Log.Info("Enter SyncDetails::FindLocalFileChanges " );
+
             DirectoryInfo directoryInfo = new DirectoryInfo(path);
 
             foreach (DirectoryInfo dir in directoryInfo.GetDirectories())
@@ -542,6 +567,7 @@ namespace Common
             {
                 metadataStore.SetItemInfo(item);
             }
+            NetLog.Log.Info("End SyncDetails::FindLocalFileChanges ");
         }
     }
 }

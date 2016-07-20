@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using Common;
 using Microsoft.Synchronization;
+using SyncFrameWork.Controllers;
 using SyncFrameWork.SyncService;
 
 namespace SyncFrameWork
@@ -33,6 +34,8 @@ namespace SyncFrameWork
 
         public override object LoadChangeData(Microsoft.Synchronization.LoadChangeContext loadChangeContext)
         {
+            NetLog.Log.Info("Start RemoteSyncDetails::LoadChangeData");
+
             ItemMetadata item;
 
             metadataStore.TryGetItem(loadChangeContext.ItemChange.ItemId, out item);
@@ -43,7 +46,9 @@ namespace SyncFrameWork
             }
 
             System.Diagnostics.Debug.WriteLine("Downloading File:" + item.Uri);
-            Stream downloadFile=null;
+            NetLog.Log.Info("Downloading File:" + item.Uri);
+            NetLog.FireMessage(this, new MessageEventArgs(item.Uri, Operation.Download, Status.Started));
+            Stream downloadFile =null;
             try
             {
                 var watch = System.Diagnostics.Stopwatch.StartNew();
@@ -55,8 +60,10 @@ namespace SyncFrameWork
             {
                 Console.WriteLine(e);
             }
-
+            NetLog.FireMessage(this, new MessageEventArgs(item.Uri, Operation.Download, Status.Finished));
+            NetLog.Log.Info("Downloading File:" + item.Uri + " Done Succsessfully, Next Step Write it on disk");
             var transferMechanism = new DataTransfer(downloadFile, item.Uri);
+            NetLog.Log.Info("End RemoteSyncDetails::LoadChangeData");
             return transferMechanism;
         }
 

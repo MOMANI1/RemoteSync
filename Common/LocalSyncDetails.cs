@@ -16,6 +16,9 @@ namespace Common
 
         public override object LoadChangeData(Microsoft.Synchronization.LoadChangeContext loadChangeContext)
         {
+            NetLog.Log.Info("Start LocalSyncDetails::LoadChangeData");
+
+
             ItemMetadata item;
             metadataStore.TryGetItem(loadChangeContext.ItemChange.ItemId, out item);
             if (item.IsTombstone)
@@ -34,7 +37,7 @@ namespace Common
             }
             DataTransfer transferMechanism = new DataTransfer(dataStream, item.Uri);
 
-           
+            NetLog.Log.Info("End LocalSyncDetails::LoadChangeData");
             return transferMechanism;
         }
     }

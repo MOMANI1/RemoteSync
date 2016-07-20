@@ -3,22 +3,19 @@ using System.ComponentModel;
 using System.Configuration;
 using System.Diagnostics;
 using System.Drawing;
-using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Threading;
 using System.Timers;
 using System.Windows;
 using System.Windows.Forms;
-using System.Windows.Input;
 using Common;
 using Microsoft.Synchronization;
 using SyncFrameWork.Controllers;
 using SyncFrameWork.TestClient;
-using SyncTool;
 using MessageBox = System.Windows.MessageBox;
-using MouseEventArgs = System.Windows.Input.MouseEventArgs;
 using Timer = System.Timers.Timer;
+
 
 namespace WpfApplication1
 {
@@ -27,6 +24,7 @@ namespace WpfApplication1
     /// </summary>
     public partial class MainWindow : Window
     {
+
         private BackgroundWorker worker;
         private Timer timer;
 
@@ -42,6 +40,8 @@ namespace WpfApplication1
       
         public MainWindow()
         {
+          
+
             InitializeComponent();
             LoadConfiguration();
             CreateNotifyIcon();
@@ -55,6 +55,15 @@ namespace WpfApplication1
             timer.Elapsed += timer_Elapsed;
 
             serviceDemo = new TestClientServiceDemo(ConfigurationManager.AppSettings["ServiceAddress"]);
+
+            NetLog.OnMessageFired += delegate(object o, MessageEventArgs args) {
+                Dispatcher.Invoke(() =>
+                {
+                    LabelFileName.Content = args.ItemUri;
+                    LabelOperation.Content = args.Operation;
+                    LabelStatus.Content = args.Status;
+                });
+            };
         }
 
 
@@ -133,47 +142,26 @@ namespace WpfApplication1
 
         public void SyncProcces()
         {
+            NetLog.Log.Info("Start SyncProcces");
             try
             {
 
                 Dispatcher.Invoke(() =>
                 {
                     buttonSync.IsEnabled = false;
+                    GroupBoxSession.Visibility=Visibility.Visible;
                 });
 
-                #region comments
 
-                /*LoadStores();
-
-                        #region config
-
-                        localStore.RequestedBatchSize = 100;
-                        remoteStore.RequestedBatchSize = 100;
-                        localStore.Configuration.ConflictResolutionPolicy = ConflictResolutionPolicy.SourceWins;
-                        remoteStore.Configuration.ConflictResolutionPolicy = ConflictResolutionPolicy.SourceWins;
-
-                        #endregion
-
-                        SyncOrchestrator syncAgent = new SyncOrchestrator();
-
-                        //syncAgent.SessionProgress += SyncAgentOnSessionProgress;
-                        syncAgent.StateChanged += SyncAgentOnStateChanged;
-
-                        syncAgent.LocalProvider = localStore;
-                        syncAgent.RemoteProvider = remoteStore;
-                        syncAgent.Direction = SyncDirectionOrder.UploadAndDownload;
-
-                        SyncOperationStatistics statistics = syncAgent.Synchronize();
-                        PrintStatistics(statistics);
-                        LoadStores();
-                        */
-
-                #endregion
-
-                if (firstTimeSync)
+                if (firstTimeSync)//ar remote and local ==null
                 {
+                    Debug.WriteLine("Start new LocalStore");
                     localStore = new LocalStore(ConfigurationManager.AppSettings["LocalAddress"]);
+                    Debug.WriteLine("End new LocalStore");
+                    Debug.WriteLine("Start new RemoteStore");
                     remoteStore = new RemoteStore(ConfigurationManager.AppSettings["ServiceAddress"]);
+                    Debug.WriteLine("End new RemoteStore");
+
                     firstTimeSync = false;
                 }
                 localStore.RequestedBatchSize = 100000000;
@@ -202,13 +190,18 @@ namespace WpfApplication1
             {
                 MessageBox.Show(ex.Message + Environment.NewLine + ex.StackTrace);
             }
+            NetLog.Log.Info("End SyncProcces");
         }
 
 
         private void LoadStores()
         {
+            Debug.WriteLine("Start new LocalStore");
             localStore = new LocalStore(ConfigurationManager.AppSettings["LocalAddress"]);
+            Debug.WriteLine("End new LocalStore");
+            Debug.WriteLine("Start new RemoteStore");
             remoteStore = new RemoteStore(ConfigurationManager.AppSettings["ServiceAddress"]);
+            Debug.WriteLine("End new RemoteStore");
         }
 
         private void PrintStatistics(SyncOperationStatistics statistics)
