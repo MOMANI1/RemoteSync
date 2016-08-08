@@ -348,33 +348,36 @@ namespace Common
             }
 
         }
+
         public void Save(string path)
         {
-
-            string syncFile = Path.Combine(path, "file.sync");
-            NetLog.Log.Info("Enter SyncDetails::Save " + syncFile);
-            System.Diagnostics.Debug.WriteLine("Saving"+ syncFile);
-            File.Delete(syncFile);
-
-            using (FileStream stream = new FileStream(syncFile, FileMode.OpenOrCreate))
+            lock (lockobject)
             {
-                BinaryFormatter bf = new BinaryFormatter();
-                bf.Serialize(stream, replicaId);
-                bf.Serialize(stream, tickCount);
-                bf.Serialize(stream, myKnowledge);
-                bf.Serialize(stream, myForgottenKnowledge);
+                string syncFile = Path.Combine(path, "file.sync");
+                NetLog.Log.Info("Enter SyncDetails::Save " + syncFile);
+                System.Diagnostics.Debug.WriteLine("Saving" + syncFile);
+                File.Delete(syncFile);
 
-                metadataStore.Save(stream);
+                using (FileStream stream = new FileStream(syncFile, FileMode.OpenOrCreate))
+                {
+                    BinaryFormatter bf = new BinaryFormatter();
+                    bf.Serialize(stream, replicaId);
+                    bf.Serialize(stream, tickCount);
+                    bf.Serialize(stream, myKnowledge);
+                    bf.Serialize(stream, myForgottenKnowledge);
 
-                System.Diagnostics.Debug.WriteLine("Saved with tickCount: " + tickCount.ToString());
+                    metadataStore.Save(stream);
+
+                    System.Diagnostics.Debug.WriteLine("Saved with tickCount: " + tickCount.ToString());
+                }
+
+                FileInfo fi = new FileInfo(syncFile);
+                fi.Attributes = FileAttributes.Hidden | FileAttributes.System;
+                System.Diagnostics.Debug.WriteLine(syncFile + " Saved succsesfully");
+                NetLog.Log.Info("End SyncDetails::Save " + syncFile);
             }
-
-            FileInfo fi = new FileInfo(syncFile);
-            fi.Attributes = FileAttributes.Hidden | FileAttributes.System;
-            System.Diagnostics.Debug.WriteLine( syncFile+ " Saved succsesfully");
-            NetLog.Log.Info("End SyncDetails::Save " + syncFile);
-
         }
+
         public void Load()
         {
             string syncFile = Path.Combine(folderPath, "file.sync");

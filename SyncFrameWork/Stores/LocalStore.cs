@@ -42,7 +42,20 @@ namespace SyncFrameWork.Controllers
 
         public override void EndSession(SyncSessionContext syncSessionContext)
         {
-            sync.Save(ConfigurationManager.AppSettings["LocalAddress"]);
+            NetLog.Log.Info("Start LocalStore::EndSession");
+            try
+            {
+                sync.Save(ConfigurationManager.AppSettings["LocalAddress"]);
+            }
+            catch (Exception ex)
+            {
+                //maybe IO Exception when try to access File.sync
+                NetLog.Log.Info("LocalStore::EndSession Failed ex:" + ex.Message);
+                NetLog.ErrorHappened(this, new ErrorEventArgs(ex));
+                Console.WriteLine(ex);
+            }
+            NetLog.Log.Info("End LocalStore::EndSession");
+
             System.Diagnostics.Debug.WriteLine("_____   Ending Session On LocalStore   ______" );
            
         }
@@ -238,6 +251,9 @@ namespace SyncFrameWork.Controllers
                     {
                       //  NetLog.Log.Info("write Downloaded file On disk, bytesRead"+ bytesRead);
                         outputStream.Write(buffer, 0, bytesRead);
+                       // double dProgress = ((double) bytesRead/data.DataStream.Length)*100.0;
+                       // NetLog.FireMessage(this,new MessageEventArgs(item.Uri,Operation.Download,Status.Started ,new {Percentage= dProgress } ));
+
                     }
                     NetLog.Log.Info("write Downloaded file On disk, Ended" + bytesRead);
                     outputStream.SetLength(outputStream.Position);
@@ -285,6 +301,7 @@ namespace SyncFrameWork.Controllers
             }
             catch (Exception exception)
             {
+                NetLog.ErrorHappened("GrantAccess", new ErrorEventArgs(exception));
                 System.Diagnostics.Debug.WriteLine(exception);
             }
             return false;

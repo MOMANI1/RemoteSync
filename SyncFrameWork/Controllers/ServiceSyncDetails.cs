@@ -58,6 +58,7 @@ namespace SyncFrameWork
             }
             catch (Exception e)
             {
+                NetLog.ErrorHappened(this, new ErrorEventArgs(e));
                 Console.WriteLine(e);
             }
             NetLog.FireMessage(this, new MessageEventArgs(item.Uri, Operation.Download, Status.Finished));

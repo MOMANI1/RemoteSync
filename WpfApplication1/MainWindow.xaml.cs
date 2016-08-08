@@ -11,6 +11,7 @@ using System.Windows;
 using System.Windows.Forms;
 using Common;
 using Microsoft.Synchronization;
+using netoaster;
 using SyncFrameWork.Controllers;
 using SyncFrameWork.TestClient;
 using MessageBox = System.Windows.MessageBox;
@@ -25,18 +26,18 @@ namespace WpfApplication1
     public partial class MainWindow : Window
     {
 
-        private BackgroundWorker worker;
-        private Timer timer;
+        private BackgroundWorker _worker;
+        private Timer _timer;
 
-        private static TestClientServiceDemo serviceDemo;
+        private static TestClientServiceDemo _serviceDemo;
 
-        private LocalStore localStore;
-        private RemoteStore remoteStore;
-        private NotifyIcon m_notifyIcon;
+        private LocalStore _localStore;
+        private RemoteStore _remoteStore;
+        private NotifyIcon _notifyIcon;
 
-        private ContextMenuStrip m_contextMenu;
-        private bool _ForceClose;
-        private int i = 0;
+        private ContextMenuStrip _contextMenu;
+        private bool _forceClose;
+        private int _syncSumNum = 0;
       
         public MainWindow()
         {
@@ -46,23 +47,28 @@ namespace WpfApplication1
             LoadConfiguration();
             CreateNotifyIcon();
 
-            worker = new BackgroundWorker();
-            worker.WorkerSupportsCancellation = true;
+            _worker = new BackgroundWorker {WorkerSupportsCancellation = true};
 
-            worker.DoWork += (sender, args) => SyncProcces();
+            _worker.DoWork += (sender, args) => SyncProcess();
 
-            timer = new Timer(Convert.ToInt32(ConfigurationManager.AppSettings["AutoSyncInterval"]) * 1000);
-            timer.Elapsed += timer_Elapsed;
+            _timer = new Timer(Convert.ToInt32(ConfigurationManager.AppSettings["AutoSyncInterval"]) * 1000);
+            _timer.Elapsed += timer_Elapsed;
 
-            serviceDemo = new TestClientServiceDemo(ConfigurationManager.AppSettings["ServiceAddress"]);
+            _serviceDemo = new TestClientServiceDemo(ConfigurationManager.AppSettings["ServiceAddress"]);
 
             NetLog.OnMessageFired += delegate(object o, MessageEventArgs args) {
+                // when the Event Happened I want to Update the UI
+                // this is WPF Window (WPF Project)  
                 Dispatcher.Invoke(() =>
                 {
                     LabelFileName.Content = args.ItemUri;
                     LabelOperation.Content = args.Operation;
-                    LabelStatus.Content = args.Status;
+                    LabelStatus.Content =$"{args.Status} {args.Data ?? ""}";
                 });
+            };
+            NetLog.OnErrorHappened+= delegate(object sender, ErrorEventArgs args)
+            {
+                _notifyIcon?.ShowBalloonTip(5000,"an Error happened in SyncTool Core",args.GetException().Message,ToolTipIcon.Error);
             };
         }
 
@@ -70,9 +76,9 @@ namespace WpfApplication1
 
         private void timer_Elapsed(object sender, ElapsedEventArgs e)
         {
-            if (!worker.IsBusy)
+            if (!_worker.IsBusy)
             {
-                worker.RunWorkerAsync();
+                _worker.RunWorkerAsync();
             }
         }
 
@@ -87,27 +93,27 @@ namespace WpfApplication1
 
         private void CreateNotifyIcon()
         {
-            m_contextMenu = new ContextMenuStrip();
+            _contextMenu = new ContextMenuStrip();
 
             ToolStripMenuItem mI1 = new ToolStripMenuItem { Text = "Open" };
             mI1.Click += (sender, args) => Maximize();
             ToolStripMenuItem mI2 = new ToolStripMenuItem { Text = "Exit" };
             mI2.Click += (sender, args) => EndApplication();
 
-            m_contextMenu.Items.Add(mI1);
-            m_contextMenu.Items.Add(mI2);
+            _contextMenu.Items.Add(mI1);
+            _contextMenu.Items.Add(mI2);
 
-            //Initalize Notify Icon
-            m_notifyIcon = new NotifyIcon
+            //Initialize Notify Icon
+            _notifyIcon = new NotifyIcon
             {
                 Text = "Sync Tool",
                 Icon = new Icon(Path.Combine(Environment.CurrentDirectory, @"icon.ico")),
-                //Associate the contextmenustrip with notify icon
-                ContextMenuStrip = m_contextMenu,
+                //Associate the ContextMenuStrip with notify icon
+                ContextMenuStrip = _contextMenu,
                 Visible = true
             };
 
-            m_notifyIcon.MouseUp += (sender, args) => m_contextMenu.Show();
+            _notifyIcon.MouseUp += (sender, args) => _contextMenu.Show();
 
 
 
@@ -115,22 +121,22 @@ namespace WpfApplication1
         }
 
 
-        private bool firstTimeClick = true;
+        private bool _firstTimeClick = true;
 
         private void button_Click(object sender, RoutedEventArgs e)
         {
             #region chagne Interval if needed
 
-            timer.Enabled = false;
-            timer.Interval = Convert.ToInt32(ConfigurationManager.AppSettings["AutoSyncInterval"]) * 1000;
-            timer.Enabled = true;
+            _timer.Enabled = false;
+            _timer.Interval = Convert.ToInt32(ConfigurationManager.AppSettings["AutoSyncInterval"]) * 1000;
+            _timer.Enabled = true;
 
             #endregion
 
-            if (firstTimeClick)
+            if (_firstTimeClick)
             {
-                timer.Start();
-                firstTimeClick = false;
+                _timer.Start();
+                _firstTimeClick = false;
             }
             timer_Elapsed(null, null);
 
@@ -138,11 +144,12 @@ namespace WpfApplication1
 
         #region sync
 
-        private bool firstTimeSync = true;
+        private bool _firstTimeSync = true;
 
-        public void SyncProcces()
+        public void SyncProcess()
         {
-            NetLog.Log.Info("Start SyncProcces");
+            //_notifyIcon.ShowBalloonTip(200, "Sync Process","started",ToolTipIcon.Info);
+            NetLog.Log.Info("Sync Process Started");
             try
             {
 
@@ -153,28 +160,28 @@ namespace WpfApplication1
                 });
 
 
-                if (firstTimeSync)//ar remote and local ==null
+                if (_firstTimeSync)//ar remote and local ==null
                 {
                     Debug.WriteLine("Start new LocalStore");
-                    localStore = new LocalStore(ConfigurationManager.AppSettings["LocalAddress"]);
+                    _localStore = new LocalStore(ConfigurationManager.AppSettings["LocalAddress"]);
                     Debug.WriteLine("End new LocalStore");
                     Debug.WriteLine("Start new RemoteStore");
-                    remoteStore = new RemoteStore(ConfigurationManager.AppSettings["ServiceAddress"]);
+                    _remoteStore = new RemoteStore(ConfigurationManager.AppSettings["ServiceAddress"]);
                     Debug.WriteLine("End new RemoteStore");
 
-                    firstTimeSync = false;
+                    _firstTimeSync = false;
                 }
-                localStore.RequestedBatchSize = 100000000;
-                remoteStore.RequestedBatchSize = 100000000;
+                _localStore.RequestedBatchSize = 100000000;
+                _remoteStore.RequestedBatchSize = 100000000;
 
-                localStore.Configuration.ConflictResolutionPolicy = ConflictResolutionPolicy.ApplicationDefined;
-                remoteStore.Configuration.ConflictResolutionPolicy = ConflictResolutionPolicy.ApplicationDefined;
+                _localStore.Configuration.ConflictResolutionPolicy = ConflictResolutionPolicy.ApplicationDefined;
+                _remoteStore.Configuration.ConflictResolutionPolicy = ConflictResolutionPolicy.ApplicationDefined;
 
                 SyncOrchestrator syncAgent = new SyncOrchestrator();
                 syncAgent.StateChanged += SyncAgentOnStateChanged;
                 //syncAgent.SessionProgress += SyncAgentOnSessionProgress;
-                syncAgent.LocalProvider = localStore;
-                syncAgent.RemoteProvider = remoteStore;
+                syncAgent.LocalProvider = _localStore;
+                syncAgent.RemoteProvider = _remoteStore;
                 syncAgent.Direction = SyncDirectionOrder.UploadAndDownload;
 
                 SyncOperationStatistics statistics = syncAgent.Synchronize();
@@ -183,24 +190,25 @@ namespace WpfApplication1
                 Dispatcher.Invoke(() =>
                 {
                     buttonSync.IsEnabled = true;
-                    labelSyncNum.Content = ++i;
+                    labelSyncNum.Content = ++_syncSumNum;
                 });
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message + Environment.NewLine + ex.StackTrace);
             }
-            NetLog.Log.Info("End SyncProcces");
+            NetLog.Log.Info("Sync Process Finished");
+            //_notifyIcon.ShowBalloonTip(200, "Sync Process", "Finished Successfully", ToolTipIcon.Info);
         }
 
 
         private void LoadStores()
         {
             Debug.WriteLine("Start new LocalStore");
-            localStore = new LocalStore(ConfigurationManager.AppSettings["LocalAddress"]);
+            _localStore = new LocalStore(ConfigurationManager.AppSettings["LocalAddress"]);
             Debug.WriteLine("End new LocalStore");
             Debug.WriteLine("Start new RemoteStore");
-            remoteStore = new RemoteStore(ConfigurationManager.AppSettings["ServiceAddress"]);
+            _remoteStore = new RemoteStore(ConfigurationManager.AppSettings["ServiceAddress"]);
             Debug.WriteLine("End new RemoteStore");
         }
 
@@ -246,7 +254,7 @@ namespace WpfApplication1
 
         private void Window_Closing(object sender, CancelEventArgs e)
         {
-            if (_ForceClose == false)
+            if (_forceClose == false)
             {
                 e.Cancel = true;
                 Minimize();
@@ -268,10 +276,10 @@ namespace WpfApplication1
             Minimize();
             //sync.cancel
             Thread.Sleep(1000);
-            _ForceClose = true;
+            _forceClose = true;
             WindowState = WindowState.Normal;
-            if (worker != null && worker.IsBusy)
-                worker.CancelAsync();
+            if (_worker != null && _worker.IsBusy)
+                _worker.CancelAsync();
             this.Close();
             Environment.Exit(0);
         }
@@ -279,11 +287,11 @@ namespace WpfApplication1
         private void slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             textBoxSeconds.Text = e.NewValue.ToString();
-            string answer = GetUserFrindlyTimeFromSeconds(e);
+            string answer = GetUserFriendlilyTimeFromSeconds(e);
             LabelTime.Content = answer;
         }
 
-        private static string GetUserFrindlyTimeFromSeconds(RoutedPropertyChangedEventArgs<double> e)
+        private static string GetUserFriendlilyTimeFromSeconds(RoutedPropertyChangedEventArgs<double> e)
         {
             TimeSpan t = TimeSpan.FromSeconds(e.NewValue);
             string answer = string.Format("{0:D2}:{1:D2}:{2:D2}",
@@ -308,7 +316,7 @@ namespace WpfApplication1
             config.AppSettings.Settings["LocalAddress"].Value = textBoxSoure.Text;
             config.AppSettings.Settings["ServiceAddress"].Value = textBoxDestination.Text;
             config.AppSettings.Settings["AutoSyncInterval"].Value = textBoxSeconds.Text;
-            config.AppSettings.Settings["UseTemp"].Value = checkBoxUseTemp.IsChecked.Value.ToString();
+            config.AppSettings.Settings["UseTemp"].Value = (checkBoxUseTemp.IsChecked != null && checkBoxUseTemp.IsChecked.Value).ToString();
             config.Save();
         }
 
@@ -331,14 +339,16 @@ namespace WpfApplication1
             }
             catch (Exception exception)
             {
+                NetLog.ErrorHappened("DeleteSyncFiles", new ErrorEventArgs(exception));
                 Console.WriteLine(exception);
             }
             try
             {
-                serviceDemo.Deletefileonserver("file.sync");
+                _serviceDemo.Deletefileonserver("file.sync");
             }
             catch (Exception exception)
             {
+                NetLog.ErrorHappened("DeleteSyncFiles", new ErrorEventArgs(exception));
                 Console.WriteLine(exception);
             }
         }

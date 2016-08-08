@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
 using System.ServiceModel;
 using Common;
 using Common.DTO;
@@ -64,7 +65,19 @@ namespace SyncFrameWork.Controllers
 
         public override void EndSession(SyncSessionContext syncSessionContext)
         {
-            service.SaveSyncSession(sync.Cast<LocalSyncDetails>());
+            NetLog.Log.Info("Start RemteStore::EndSession");
+            try
+            {
+                service.SaveSyncSession(sync.Cast<LocalSyncDetails>());
+            }
+            catch (Exception ex)
+            {
+                //maybe IO Exception when try to access File.sync
+                NetLog.Log.Info("RemteStore::EndSession Failed ex:"+ex.Message);
+                NetLog.ErrorHappened(this,new ErrorEventArgs(ex));
+                Console.WriteLine(ex);
+            }
+            NetLog.Log.Info("End RemteStore::EndSession");
             System.Diagnostics.Debug.WriteLine("_____   Ending Session On RemoteStore   ______");
         }
 

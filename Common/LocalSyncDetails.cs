@@ -33,6 +33,7 @@ namespace Common
             }
             catch (Exception e)
             {
+                NetLog.ErrorHappened(this, new ErrorEventArgs(e));
                 Console.WriteLine(e);
             }
             DataTransfer transferMechanism = new DataTransfer(dataStream, item.Uri);
